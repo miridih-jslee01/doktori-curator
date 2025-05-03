@@ -1,4 +1,9 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
+import {
+  addReactionsToMessage,
+  createPollMessageText,
+  parseAndValidatePollItems,
+} from "./utils/poll_utils.ts";
 
 export const CreatePollFunction = DefineFunction({
   callback_id: "create_poll",
@@ -30,57 +35,20 @@ export const CreatePollFunction = DefineFunction({
 export default SlackFunction(
   CreatePollFunction,
   async ({ inputs, client }) => {
-    // 1) poll_items 파싱
-    const items = inputs.poll_items
-      .split("\n")
-      .map((i) => i.trim())
-      .filter(Boolean);
-    console.log(items);
-
-    // 항목이 10개를 초과하면 오류 반환
-    if (items.length > 10) {
-      return {
-        error: "투표 도서는 최대 10권까지만 지원합니다.",
-      };
+    // 1) 투표 항목 파싱 및 검증
+    const parsedItems = parseAndValidatePollItems(inputs.poll_items);
+    if ("error" in parsedItems) {
+      return { error: parsedItems.error };
     }
 
-    // 2) 숫자 이모지 배열
-    const emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
-    console.log(emojis);
+    const { items } = parsedItems;
+    console.log(items);
 
-    // 3) 메시지 텍스트 조합
-    const itemsWithEmojis = items
-      .map((item, idx) => `${emojis[idx]}  ${item}`)
-      .join("\n");
-    console.log(itemsWithEmojis);
+    // 2) 메시지 텍스트 생성
+    const text = createPollMessageText(items);
 
-    // 내일 현재 시간 계산
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    // 시간 포맷팅 (한국어 형식)
-    const formattedDate = tomorrow.toLocaleString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-
-    const text = `<!channel>\n${itemsWithEmojis}
-    
-    투표 참여 방법
-    1. 원하는 도서 이모지를 누르세요.
-    2. 인원제한을 넘어가면 랜덤으로 다른 도서를 추천해드립니다.
-    3. 투표마감은 *${formattedDate}* 입니다!
-    `;
-
-    // 4) 메시지 전송 부분 전에 추가
+    // 3) 채널 ID 검증
     console.log(`채널 ID: ${inputs.channel_id}`);
-
-    // channel_id가 비어있거나 형식이 잘못된 경우 처리
     if (!inputs.channel_id || inputs.channel_id.trim() === "") {
       return {
         error:
@@ -88,7 +56,7 @@ export default SlackFunction(
       };
     }
 
-    // 5) 메시지 전송
+    // 4) 메시지 전송 및 리액션 추가
     try {
       const post = await client.chat.postMessage({
         channel: inputs.channel_id,
@@ -96,36 +64,16 @@ export default SlackFunction(
         mrkdwn: true,
       });
       console.log(post);
-      // 6) 각 이모지로 리액션 추가
-      for (let i = 0; i < items.length; i++) {
-        // 숫자에 맞는 이모지 코드 사용
-        const emojiName = [
-          "one",
-          "two",
-          "three",
-          "four",
-          "five",
-          "six",
-          "seven",
-          "eight",
-          "nine",
-          "keycap_ten",
-        ][i];
 
-        try {
-          await client.reactions.add({
-            channel: post.channel!,
-            timestamp: post.ts!,
-            name: emojiName,
-          });
-          console.log(`${emojiName} 리액션 추가 성공`);
-        } catch (error) {
-          console.log(`${emojiName} 리액션 추가 실패: ${error}`);
-        }
-      }
-      console.log("리액션 추가 완료");
+      // 5) 리액션 추가
+      await addReactionsToMessage(
+        client,
+        post.channel!,
+        post.ts!,
+        items.length,
+      );
 
-      // 7) 워크플로우에 반환할 output 값
+      // 6) 워크플로우에 반환할 output 값
       return {
         outputs: {
           channel_id: post.channel!,
