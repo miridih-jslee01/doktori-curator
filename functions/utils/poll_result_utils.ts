@@ -125,14 +125,14 @@ export function createGroupStatusMessage(
   group: BookGroup,
   personLimit: number,
 ): string {
-  // 사용자 ID를 멘션 형식으로 변환
-  const mentions = group.members.map((userId) => `<@${userId}>`).join(" ");
-
   // 그룹 상태 표시 (인원제한 충족 또는 미달)
   const groupStatus = group.isFull
     ? "✅ 인원이 모두 찼습니다!"
     : "⚠️ 인원이 부족합니다";
 
-  // 그룹 메시지 생성
+  // 사용자 멘션 생성
+  const mentions = group.members.map((userId) => `<@${userId}>`).join(" ");
+
+  // 그룹 메시지 생성 - 제목과 멘션을 함께 반환
   return `📚 *${group.bookTitle}* (${group.members.length}/${personLimit}명) ${groupStatus}\n${mentions}`;
 }

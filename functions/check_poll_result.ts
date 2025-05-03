@@ -110,7 +110,7 @@ export default SlackFunction(
           channel: inputs.channel_id,
           thread_ts: inputs.message_ts,
           text: groupMessage,
-          parse: "full",
+          mrkdwn: true,
         });
 
         // 결과 요약에 추가
