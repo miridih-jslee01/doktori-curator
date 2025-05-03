@@ -49,10 +49,34 @@ export default SlackFunction(
     console.log(emojis);
 
     // 3) 메시지 텍스트 조합
-    const text = items
+    const itemsWithEmojis = items
       .map((item, idx) => `${emojis[idx]}  ${item}`)
       .join("\n");
-    console.log(text);
+    console.log(itemsWithEmojis);
+
+    // 내일 현재 시간 계산
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // 시간 포맷팅 (한국어 형식)
+    const formattedDate = tomorrow.toLocaleString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    const text = ` 
+    ${itemsWithEmojis}
+    
+    투표 참여 방법
+    1. 원하는 도서 이모지를 누르세요.
+    2. 인원제한을 넘어가면 랜덤으로 다른 도서를 추천해드립니다.
+    3. 투표마감은 *${formattedDate}* 입니다!
+    `;
 
     // 4) 메시지 전송 부분 전에 추가
     console.log(`채널 ID: ${inputs.channel_id}`);
