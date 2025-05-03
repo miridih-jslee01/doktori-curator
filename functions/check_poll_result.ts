@@ -92,12 +92,27 @@ export default SlackFunction(
       // 5. 미할당 사용자를 다른 그룹으로 재배치
       reassignUnassignedUsers(bookGroups, unassignedUsers, inputs.person_limit);
 
-      // 6. 최종 결과를 스레드에 멘션과 함께 알림
+      // 6. 최종 결과를 채널에 직접 메시지로 보냄
       const filledGroups = bookGroups.filter((group) =>
         group.members.length > 0
       );
+
+      // 책 인덱스 순서대로 정렬 (1, 2, 3, 4 순서로 표시)
+      filledGroups.sort((a, b) => a.bookIndex - b.bookIndex);
+
       let resultSummary = "";
 
+      // 먼저 결과 요약 메시지를 보냄
+      const summaryText =
+        `📊 *도서 투표 결과*\n총 ${allUsers.length}명이 참여했습니다. ${filledGroups.length}개 그룹이 생성되었습니다.`;
+
+      await client.chat.postMessage({
+        channel: inputs.channel_id,
+        text: summaryText,
+        mrkdwn: true,
+      });
+
+      // 각 그룹의 결과를 채널에 직접 전송
       for (const group of filledGroups) {
         // 그룹 메시지 생성
         const groupMessage = createGroupStatusMessage(
@@ -105,10 +120,9 @@ export default SlackFunction(
           inputs.person_limit,
         );
 
-        // 스레드에 메시지 전송
+        // 채널에 직접 전송 (thread_ts 없이)
         await client.chat.postMessage({
           channel: inputs.channel_id,
-          thread_ts: inputs.message_ts,
           text: groupMessage,
           mrkdwn: true,
         });
