@@ -37,7 +37,10 @@ export function getTomorrowFormattedDate(): string {
 }
 
 // 투표 메시지 텍스트 생성
-export function createPollMessageText(items: string[]): string {
+export function createPollMessageText(
+  items: string[],
+  personLimit: number = 0,
+): string {
   const itemsWithEmojis = items
     .map((item, idx) => `${EMOJI_MAPPING[idx].display}  ${item}`)
     .join("\n");
@@ -48,7 +51,7 @@ export function createPollMessageText(items: string[]): string {
     
   📌 *투표 참여 방법*
   1. 👆 원하는 도서 *이모지를 눌러* 투표하세요.
-  2. 🔄 인원제한을 넘어가면 랜덤으로 다른 도서를 추천해드립니다.
+  2. 🔄 그룹당 인원은 *${personLimit}명* 으로 제한됩니다. 초과 시 투표 마감시 다른 그룹으로 자동 배정됩니다.
   3. ⏰ 투표마감은 *${formattedDate}* 입니다!
   `;
 }

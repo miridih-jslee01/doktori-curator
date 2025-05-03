@@ -20,6 +20,10 @@ export const CreatePollFunction = DefineFunction({
         type: Schema.types.string,
         description: "줄바꿈(\\n)으로 구분된 도서 목록",
       },
+      person_limit: {
+        type: Schema.types.number,
+        description: "그룹당 인원 제한 수",
+      },
     },
     required: ["channel_id", "poll_items"],
   },
@@ -27,8 +31,9 @@ export const CreatePollFunction = DefineFunction({
     properties: {
       channel_id: { type: Schema.types.string },
       message_ts: { type: Schema.types.string },
+      person_limit: { type: Schema.types.number },
     },
-    required: ["channel_id", "message_ts"],
+    required: ["channel_id", "message_ts", "person_limit"],
   },
 });
 
@@ -44,8 +49,10 @@ export default SlackFunction(
     const { items } = parsedItems;
     console.log(items);
 
-    // 2) 메시지 텍스트 생성
-    const text = createPollMessageText(items);
+    const personLimit = inputs.person_limit || 0;
+
+    // 2) 메시지 텍스트 생성 (인원 제한 정보 포함)
+    const text = createPollMessageText(items, personLimit);
 
     // 3) 채널 ID 검증
     console.log(`채널 ID: ${inputs.channel_id}`);
@@ -78,6 +85,8 @@ export default SlackFunction(
         outputs: {
           channel_id: post.channel!,
           message_ts: post.ts!,
+          person_limit: personLimit,
+          poll_items: inputs.poll_items,
         },
       };
     } catch (error: unknown) {
