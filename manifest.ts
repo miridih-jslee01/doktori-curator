@@ -14,5 +14,11 @@ export default Manifest({
   functions: [CreatePollFunction, CheckPollResultFunction],
   workflows: [],
   outgoingDomains: [],
-  botScopes: ["commands", "chat:write", "chat:write.public", "reactions:write"],
+  botScopes: [
+    "commands",
+    "chat:write",
+    "chat:write.public",
+    "reactions:write",
+    "reactions:read",
+  ],
 });
