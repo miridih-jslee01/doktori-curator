@@ -69,7 +69,7 @@ export default SlackFunction(
       hour12: true,
     });
 
-    const text = ` 
+    const text = `<!channel> 
     ${itemsWithEmojis}
     
     투표 참여 방법
