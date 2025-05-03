@@ -2,8 +2,8 @@ import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 
 export const CreatePollFunction = DefineFunction({
   callback_id: "create_poll",
-  title: "숫자 이모지 투표 생성",
-  description: "줄바꿈으로 구분된 항목으로 숫자 이모지 투표를 생성합니다",
+  title: "도서 투표 생성",
+  description: "줄바꿈으로 구분된 도서 목록으로 숫자 이모지 투표를 생성합니다",
   source_file: "functions/create_poll.ts",
   input_parameters: {
     properties: {
@@ -13,7 +13,7 @@ export const CreatePollFunction = DefineFunction({
       },
       poll_items: {
         type: Schema.types.string,
-        description: "줄바꿈(\\n)으로 구분된 투표 항목 리스트",
+        description: "줄바꿈(\\n)으로 구분된 도서 목록",
       },
     },
     required: ["channel_id", "poll_items"],
@@ -40,7 +40,7 @@ export default SlackFunction(
     // 항목이 10개를 초과하면 오류 반환
     if (items.length > 10) {
       return {
-        error: "투표 항목은 최대 10개까지만 지원합니다.",
+        error: "투표 도서는 최대 10권까지만 지원합니다.",
       };
     }
 

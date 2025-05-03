@@ -2,14 +2,14 @@ import { Manifest } from "deno-slack-sdk/mod.ts";
 import { CreatePollFunction } from "./functions/create_poll.ts";
 
 /**
- * The app manifest contains the app's configuration. This
- * file defines attributes like app name and description.
+ * 앱 매니페스트는 앱의 구성을 포함합니다.
+ * 이 파일은 앱 이름과 설명과 같은 속성을 정의합니다.
  * https://api.slack.com/automation/manifest
  */
 export default Manifest({
-  name: "number-emoji-poll",
-  description: "슬랙에서 숫자 이모지를 사용한 투표를 손쉽게 생성하는 앱",
-  icon: "assets/default_new_app_icon.png",
+  name: "doktori-curator",
+  description: "독서동호회 운영을 위한 워크플로우와 커스텀 스텝을 제공하는 앱",
+  icon: "assets/icon.png",
   functions: [CreatePollFunction],
   workflows: [],
   outgoingDomains: [],
