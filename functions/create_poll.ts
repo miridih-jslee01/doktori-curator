@@ -69,8 +69,7 @@ export default SlackFunction(
       hour12: true,
     });
 
-    const text = `<!channel> 
-    ${itemsWithEmojis}
+    const text = `<!channel>\n${itemsWithEmojis}
     
     투표 참여 방법
     1. 원하는 도서 이모지를 누르세요.
