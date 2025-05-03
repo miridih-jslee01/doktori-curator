@@ -75,11 +75,30 @@ export default SlackFunction(
       console.log(post);
       // 6) 각 이모지로 리액션 추가
       for (let i = 0; i < items.length; i++) {
-        await client.reactions.add({
-          channel: post.channel!,
-          timestamp: post.ts!,
-          name: emojis[i].replace(/️⃣/g, ""), // 이모지 숫자만 추출
-        });
+        // 숫자에 맞는 이모지 코드 사용
+        const emojiName = [
+          "one",
+          "two",
+          "three",
+          "four",
+          "five",
+          "six",
+          "seven",
+          "eight",
+          "nine",
+          "keycap_ten",
+        ][i];
+
+        try {
+          await client.reactions.add({
+            channel: post.channel!,
+            timestamp: post.ts!,
+            name: emojiName,
+          });
+          console.log(`${emojiName} 리액션 추가 성공`);
+        } catch (error) {
+          console.log(`${emojiName} 리액션 추가 실패: ${error}`);
+        }
       }
       console.log("리액션 추가 완료");
 
