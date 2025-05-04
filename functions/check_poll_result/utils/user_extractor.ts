@@ -2,7 +2,7 @@
  * 투표 반응에서 사용자 정보를 추출하는 모듈
  */
 import { ReactionUser, SlackReaction } from "./types.ts";
-import { EMOJI_MAPPING } from "../utils/emoji_mapping.ts";
+import { EMOJI_MAPPING } from "../../utils/emoji_mapping.ts";
 
 /**
  * 리액션 데이터로부터 사용자 정보를 추출합니다.

@@ -2,7 +2,7 @@
  * 사용자를 책 그룹에 할당하는 로직을 담당하는 모듈
  */
 import { BookGroup, GroupAssignmentResult, ReactionUser } from "./types.ts";
-import { shuffle } from "../utils/arrays.ts";
+import { shuffle } from "../../utils/arrays.ts";
 
 /**
  * 책 그룹을 초기화합니다.

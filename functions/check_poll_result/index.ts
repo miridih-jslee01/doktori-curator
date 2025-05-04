@@ -1,12 +1,12 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { processPollResult } from "./poll/poll_service.ts";
-import { SlackReaction } from "./poll/types.ts";
+import { processPollResult } from "./utils/poll_service.ts";
+import { SlackReaction } from "./utils/types.ts";
 
 export const CheckPollResultFunction = DefineFunction({
   callback_id: "check_poll_result",
   title: "도서 투표 결과 확인 및 그룹 구성",
   description: "도서 투표 결과를 확인하고 인원제한에 맞게 그룹을 구성합니다",
-  source_file: "functions/check_poll_result.ts",
+  source_file: "functions/check_poll_result/index.ts",
   input_parameters: {
     properties: {
       channel_id: {

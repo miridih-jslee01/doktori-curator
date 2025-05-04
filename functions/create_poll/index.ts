@@ -9,7 +9,7 @@ export const CreatePollFunction = DefineFunction({
   callback_id: "create_poll",
   title: "도서 투표 생성",
   description: "줄바꿈으로 구분된 도서 목록으로 숫자 이모지 투표를 생성합니다",
-  source_file: "functions/create_poll.ts",
+  source_file: "functions/create_poll/index.ts",
   input_parameters: {
     properties: {
       channel_id: {

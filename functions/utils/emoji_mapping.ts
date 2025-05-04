@@ -1,4 +1,7 @@
-// 이모지 매핑 객체 - 표시용 이모지와 리액션 이름을 함께 관리
+/**
+ * 투표에 사용되는 숫자 이모지 매핑
+ * 두 도메인 모두에서 사용되므로 공통 유틸리티로 유지합니다.
+ */
 export const EMOJI_MAPPING = [
   { display: "1️⃣", reaction: "one" },
   { display: "2️⃣", reaction: "two" },

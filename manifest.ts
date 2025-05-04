@@ -1,6 +1,6 @@
 import { Manifest } from "deno-slack-sdk/mod.ts";
-import { CreatePollFunction } from "./functions/create_poll.ts";
-import { CheckPollResultFunction } from "./functions/check_poll_result.ts";
+import { CreatePollFunction } from "./functions/create_poll/index.ts";
+import { CheckPollResultFunction } from "./functions/check_poll_result/index.ts";
 
 /**
  * 앱 매니페스트는 앱의 구성을 포함합니다.
