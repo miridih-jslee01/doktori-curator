@@ -1,5 +1,12 @@
 import { EMOJI_MAPPING } from "./emoji_mapping.ts";
 
+// 슬랙 API 응답에서 사용하는 리액션 객체 타입 정의
+interface SlackReaction {
+  name: string;
+  users: string[];
+  count: number;
+}
+
 // 리액션 정보를 가진 사용자를 위한 타입 정의
 export interface ReactionUser {
   bookIndex: number; // 책 인덱스 (0부터 시작)
@@ -17,7 +24,7 @@ export interface BookGroup {
 
 // 리액션 데이터로부터 사용자 정보 추출
 export function extractUsersFromReactions(
-  reactions: any[],
+  reactions: SlackReaction[],
   bookTitles: string[],
 ): ReactionUser[] {
   const allUsers: ReactionUser[] = [];
@@ -25,7 +32,7 @@ export function extractUsersFromReactions(
   // 각 리액션 이모지에 대해 (숫자 이모지만 필터링)
   for (let bookIndex = 0; bookIndex < EMOJI_MAPPING.length; bookIndex++) {
     const emojiInfo = EMOJI_MAPPING[bookIndex];
-    const reaction = reactions.find((r: any) => r.name === emojiInfo.reaction);
+    const reaction = reactions.find((r) => r.name === emojiInfo.reaction);
 
     // 해당 이모지에 반응한 사용자가 있다면
     if (reaction && reaction.users && bookIndex < bookTitles.length) {
