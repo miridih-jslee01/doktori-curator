@@ -36,8 +36,12 @@ export const CheckPollResultFunction = DefineFunction({
         type: Schema.types.string,
         description: "투표 결과 요약",
       },
+      book_groups: {
+        type: Schema.types.string,
+        description: "책 그룹 정보 (JSON 문자열)",
+      },
     },
-    required: ["result_summary"],
+    required: ["result_summary", "book_groups"],
   },
 });
 
@@ -112,16 +116,28 @@ export default SlackFunction(
         mrkdwn: true,
       });
 
+      // 각 그룹의 정보를 저장할 배열
+      const groupsInfo = [];
+
       // 각 그룹의 결과를 채널에 직접 전송
       for (let i = 0; i < filledGroups.length; i++) {
         const group = filledGroups[i];
 
         // 채널에 직접 전송 (thread_ts 없이)
-        await client.chat.postMessage({
+        const messageResponse = await client.chat.postMessage({
           channel: inputs.channel_id,
           text: messages[i],
           mrkdwn: true,
         });
+
+        // 메시지 전송 성공 시 그룹 정보 저장
+        if (messageResponse.ok && messageResponse.ts) {
+          groupsInfo.push({
+            bookTitle: group.bookTitle,
+            members: group.members.join(","), // 멤버 ID 문자열로 변환
+            thread_ts: messageResponse.ts, // 스레드 타임스탬프 저장
+          });
+        }
 
         // 결과 요약에 추가
         resultSummary += `${group.bookTitle}: ${group.members.length}명\n`;
@@ -132,6 +148,7 @@ export default SlackFunction(
         outputs: {
           result_summary:
             `투표 결과: 총 ${totalParticipants}명 참여, ${filledGroups.length}개 그룹 생성\n${resultSummary}`,
+          book_groups: JSON.stringify(groupsInfo),
         },
       };
     } catch (error) {
