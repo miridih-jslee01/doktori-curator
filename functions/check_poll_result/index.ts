@@ -3,6 +3,8 @@ import { processPollResult } from "./utils/poll_service.ts";
 import { SlackReaction } from "./utils/types.ts";
 import { filterBotUsersFromReactions } from "./utils/reaction_processor.ts";
 import { safeStringifyBookGroups } from "../_validators/book_group_validator.ts";
+import { processGroupsAndMessages } from "./utils/group_processor.ts";
+import { createSummaryMessage } from "./utils/message_formatter.ts";
 
 export const CheckPollResultFunction = DefineFunction({
   callback_id: "check_poll_result",
@@ -33,16 +35,12 @@ export const CheckPollResultFunction = DefineFunction({
   },
   output_parameters: {
     properties: {
-      result_summary: {
-        type: Schema.types.string,
-        description: "투표 결과 요약",
-      },
       book_groups: {
         type: Schema.types.string,
         description: "책 그룹 정보 (JSON 문자열)",
       },
     },
-    required: ["result_summary", "book_groups"],
+    required: ["book_groups"],
   },
 });
 
@@ -93,32 +91,18 @@ export default SlackFunction(
         };
       }
 
-      // 책 인덱스 순서대로 정렬 (1, 2, 3, 4 순서로 표시)
-      const filledGroups = bookGroups.filter((group) =>
-        group.members.length > 0
+      // 4. 그룹과 메시지 처리 (필터링 및 정렬)
+      const {
+        sortedGroups,
+        sortedMessages,
+        totalParticipants,
+      } = processGroupsAndMessages(bookGroups, messages);
+
+      // 5. 요약 메시지 생성 및 전송
+      const summaryText = createSummaryMessage(
+        totalParticipants,
+        sortedGroups.length,
       );
-      filledGroups.sort((a, b) => a.bookIndex - b.bookIndex);
-
-      // filledGroups와 messages 간의 매핑을 유지하기 위해 새로운 배열 생성
-      const sortedMessages = filledGroups.map((group) => {
-        // 원래 bookGroups에서의 인덱스를 찾아서 해당 메시지를 가져옴
-        const originalIndex = bookGroups.findIndex(
-          (originalGroup) => originalGroup.bookIndex === group.bookIndex,
-        );
-        return messages[originalIndex];
-      });
-
-      // 총 참여 인원수 계산
-      const totalParticipants = filledGroups.reduce(
-        (sum, group) => sum + group.members.length,
-        0,
-      );
-
-      let resultSummary = "";
-
-      // 먼저 결과 요약 메시지를 보냄
-      const summaryText =
-        `📊 *도서 투표 결과*\n총 ${totalParticipants}명이 참여했습니다. ${filledGroups.length}개 그룹이 생성되었습니다.`;
 
       await client.chat.postMessage({
         channel: inputs.channel_id,
@@ -126,35 +110,43 @@ export default SlackFunction(
         mrkdwn: true,
       });
 
-      // 각 그룹의 정보를 저장할 배열
+      // 6. 각 그룹별 메시지 전송 및 그룹 정보 수집
       const groupsInfo = [];
 
       // 각 그룹의 결과를 채널에 직접 전송
-      for (let i = 0; i < filledGroups.length; i++) {
-        const group = filledGroups[i];
+      for (let i = 0; i < sortedGroups.length; i++) {
+        const group = sortedGroups[i];
+        const message = sortedMessages[i];
 
-        // 채널에 직접 전송 (thread_ts 없이) - sortedMessages 사용
-        const messageResponse = await client.chat.postMessage({
-          channel: inputs.channel_id,
-          text: sortedMessages[i],
-          mrkdwn: true,
-        });
-        console.log(messageResponse);
-
-        // 메시지 전송 성공 시 그룹 정보 저장
-        if (messageResponse.ok && messageResponse.ts) {
-          groupsInfo.push({
-            bookTitle: group.bookTitle,
-            members: group.members.join(","), // 멤버 ID 문자열로 변환
-            thread_ts: messageResponse.ts, // 스레드 타임스탬프 저장
-          });
+        // 메시지가 없거나 그룹이 없으면 건너뛰기
+        if (!message || !group) {
+          console.warn(`메시지 또는 그룹 데이터 누락: 인덱스 ${i}`);
+          continue;
         }
 
-        // 결과 요약에 추가
-        resultSummary += `${group.bookTitle}: ${group.members.length}명\n`;
+        try {
+          // 채널에 직접 전송
+          const messageResponse = await client.chat.postMessage({
+            channel: inputs.channel_id,
+            text: message,
+            mrkdwn: true,
+          });
+
+          // 메시지 전송 성공 시 그룹 정보 저장
+          if (messageResponse.ok && messageResponse.ts) {
+            groupsInfo.push({
+              bookTitle: group.bookTitle,
+              members: group.members.join(","), // 멤버 ID 문자열로 변환
+              thread_ts: messageResponse.ts, // 스레드 타임스탬프 저장
+            });
+          }
+        } catch (error) {
+          console.error(`그룹 메시지 전송 중 오류: ${error}`);
+          // 오류가 발생해도 다른 그룹 처리 계속
+        }
       }
 
-      // JSON 문자열화 및 유효성 검증
+      // 8. JSON 문자열화 및 유효성 검증
       const stringifyResult = safeStringifyBookGroups(groupsInfo);
       if (!stringifyResult.success || !stringifyResult.data) {
         console.error(`Error: ${stringifyResult.error}`);
@@ -165,11 +157,8 @@ export default SlackFunction(
         };
       }
 
-      // 7. 투표 요약 정보 반환
       return {
         outputs: {
-          result_summary:
-            `투표 결과: 총 ${totalParticipants}명 참여, ${filledGroups.length}개 그룹 생성\n${resultSummary}`,
           book_groups: stringifyResult.data,
         },
       };
