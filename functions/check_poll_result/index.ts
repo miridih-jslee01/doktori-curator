@@ -2,6 +2,7 @@ import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { processPollResult } from "./utils/poll_service.ts";
 import { SlackReaction } from "./utils/types.ts";
 import { filterBotUsersFromReactions } from "./utils/reaction_processor.ts";
+import { safeStringifyBookGroups } from "../utils/validators.ts";
 
 export const CheckPollResultFunction = DefineFunction({
   callback_id: "check_poll_result",
@@ -143,12 +144,23 @@ export default SlackFunction(
         resultSummary += `${group.bookTitle}: ${group.members.length}명\n`;
       }
 
+      // JSON 문자열화 및 유효성 검증
+      const stringifyResult = safeStringifyBookGroups(groupsInfo);
+      if (!stringifyResult.success || !stringifyResult.data) {
+        console.error(`Error: ${stringifyResult.error}`);
+        return {
+          error: `책 그룹 정보 처리 중 오류 발생: ${
+            stringifyResult.error || "데이터가 비어있습니다"
+          }`,
+        };
+      }
+
       // 7. 투표 요약 정보 반환
       return {
         outputs: {
           result_summary:
             `투표 결과: 총 ${totalParticipants}명 참여, ${filledGroups.length}개 그룹 생성\n${resultSummary}`,
-          book_groups: JSON.stringify(groupsInfo),
+          book_groups: stringifyResult.data,
         },
       };
     } catch (error) {

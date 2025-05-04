@@ -1,12 +1,6 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { shuffle } from "../utils/arrays.ts";
-
-// 그룹 정보 인터페이스 정의
-interface BookGroup {
-  bookTitle: string;
-  members: string;
-  thread_ts: string;
-}
+import { safeParseBookGroups } from "../utils/validators.ts";
 
 export const SelectPresenterFunction = DefineFunction({
   callback_id: "select_presenter",
@@ -41,11 +35,21 @@ export default SlackFunction(
   SelectPresenterFunction,
   async ({ inputs, client }) => {
     try {
-      // 책 그룹 정보 파싱
-      const bookGroups: BookGroup[] = JSON.parse(inputs.book_groups);
-      console.log(bookGroups);
+      // 책 그룹 정보 안전하게 파싱
+      const parseResult = safeParseBookGroups(inputs.book_groups);
+      console.log("Parse result:", parseResult);
 
-      if (!bookGroups || bookGroups.length === 0) {
+      if (!parseResult.success || !parseResult.data) {
+        return {
+          error: `책 그룹 정보 파싱 실패: ${
+            parseResult.error || "데이터가 비어있습니다"
+          }`,
+        };
+      }
+
+      const bookGroups = parseResult.data;
+
+      if (bookGroups.length === 0) {
         return {
           error: "처리할 책 그룹 정보가 없습니다.",
         };
