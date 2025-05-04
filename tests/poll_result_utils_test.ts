@@ -5,8 +5,8 @@ import {
   reassignUnassignedUsers,
 } from "../functions/utils/poll_result_utils.ts";
 
-// 테스트 1: 기본 시나리오 - 인원 초과 그룹에서 다른 그룹으로 재배치
-Deno.test("기본 시나리오: 인원 초과된 그룹에서 다른 그룹으로 재배치", () => {
+// 테스트 그룹 1: 기본 시나리오 - 인원 초과 그룹에서 다른 그룹으로 재배치
+Deno.test("기본 시나리오: 인원 초과된 그룹에서 다른 그룹으로 재배치", async (t) => {
   // Arrange - 테스트 데이터 설정
   const bookTitles = ["소프트웨어 장인", "클린 코드", "리팩터링"];
   const users: ReactionUser[] = [
@@ -35,36 +35,48 @@ Deno.test("기본 시나리오: 인원 초과된 그룹에서 다른 그룹으�
     personLimit
   );
   
-  // 첫 번째 책은 4명만 배정되고 2명은 unassignedUsers에 있어야 함
-  assertEquals(bookGroups[0].members.length, 4);
-  assertEquals(unassignedUsers.length, 2);
-  
   // 미할당 사용자 재배치 실행
   reassignUnassignedUsers(bookGroups, unassignedUsers, personLimit);
   
-  // Assert - 결과 검증
-  // 모든 사용자가 어딘가에 배정되어야 함
-  const totalAssigned = bookGroups.reduce(
-    (sum, group) => sum + group.members.length, 
-    0
-  );
-  assertEquals(totalAssigned, 9); // 총 9명 모두 배정됨
-  
-  // 각 그룹의 인원 확인 (각 그룹이 인원제한을 초과하지 않아야 함)
-  bookGroups.forEach(group => {
-    assertEquals(group.members.length <= personLimit, true);
+  // 서브테스트 1: 초기 그룹 할당 검증
+  await t.step("초기 그룹 할당", () => {
+    // 첫 번째 책은 4명만 배정되고 2명은 unassignedUsers에 있어야 함
+    assertEquals(bookGroups[0].members.length, 4, "첫 번째 그룹은 제한인원(4명)만 배정되어야 함");
+    assertEquals(unassignedUsers.length, 2, "초과 인원 2명이 미할당 상태여야 함");
   });
   
-  // 어느 그룹으로 재배치되었는지 확인
-  console.log("그룹별 최종 인원 구성:");
-  bookGroups.forEach(group => {
-    console.log(`'${group.bookTitle}' 그룹: ${group.members.length}명`);
-    console.log(` - 멤버: ${group.members.join(", ")}`);
+  // 서브테스트 2: 모든 사용자 배정 검증
+  await t.step("모든 사용자가 어딘가에 배정됨", () => {
+    const totalAssigned = bookGroups.reduce(
+      (sum, group) => sum + group.members.length, 
+      0
+    );
+    assertEquals(totalAssigned, 9, "총 9명 모두 배정되어야 함");
+  });
+  
+  // 서브테스트 3: 인원 제한 준수 검증
+  await t.step("인원제한 준수", () => {
+    bookGroups.forEach((group, index) => {
+      assertEquals(
+        group.members.length <= personLimit, 
+        true, 
+        `그룹 ${index+1}(${group.bookTitle})의 인원이 제한(${personLimit}명)을 초과함`
+      );
+    });
+  });
+  
+  // 서브테스트 4: 그룹별 배정 결과 출력 (검증은 하지 않음)
+  await t.step("그룹별 배정 결과 출력", () => {
+    console.log("그룹별 최종 인원 구성:");
+    bookGroups.forEach(group => {
+      console.log(`'${group.bookTitle}' 그룹: ${group.members.length}명`);
+      console.log(` - 멤버: ${group.members.join(", ")}`);
+    });
   });
 });
 
-// 테스트 2: 모든 그룹이 가득 찬 경우
-Deno.test("모든 그룹이 가득 찬 경우 (극단적 상황)", () => {
+// 테스트 그룹 2: 모든 그룹이 가득 찬 경우
+Deno.test("모든 그룹이 가득 찬 경우 (극단적 상황)", async (t) => {
   // Arrange
   const bookTitles = ["도서1", "도서2"];
   const users: ReactionUser[] = [
@@ -93,28 +105,24 @@ Deno.test("모든 그룹이 가득 찬 경우 (극단적 상황)", () => {
     personLimit
   );
   
-  // 두 그룹 모두 4명씩 배정되고 3명은 unassignedUsers에 있어야 함
-  assertEquals(bookGroups[0].members.length, 4);
-  assertEquals(bookGroups[1].members.length, 4);
-  assertEquals(unassignedUsers.length, 3);
-  
   // 모든 그룹이 이미 가득 찼으므로 재배치할 곳이 없음
   reassignUnassignedUsers(bookGroups, unassignedUsers, personLimit);
   
-  // Assert
-  // 모든 그룹은 여전히 꽉 차 있어야 함
-  assertEquals(bookGroups[0].members.length, 4);
-  assertEquals(bookGroups[1].members.length, 4);
+  // 서브테스트 1: 초기 배정 검증
+  await t.step("모든 그룹이 인원제한에 도달함", () => {
+    assertEquals(bookGroups[0].members.length, 4, "첫 번째 그룹이 가득 차야 함");
+    assertEquals(bookGroups[1].members.length, 4, "두 번째 그룹이 가득 차야 함");
+  });
   
-  // 재배치되지 못한 사용자들이 있는지 확인 (로그 출력)
-  console.log(`재배치하지 못한 사용자 수: ${unassignedUsers.length}명`);
-  
-  // 모든 그룹이 가득 찬 경우에는 미할당 사용자가 그대로 남아있어야 함
-  assertEquals(unassignedUsers.length, 3);
+  // 서브테스트 2: 재배치 불가능한 사용자 확인
+  await t.step("재배치되지 않은 사용자 존재", () => {
+    assertEquals(unassignedUsers.length, 3, "3명의 사용자가 배정되지 못함");
+    console.log(`재배치하지 못한 사용자 수: ${unassignedUsers.length}명`);
+  });
 });
 
-// 테스트 3: 딱 맞게 배정되는 경우
-Deno.test("정확히 인원제한에 맞게 배정되는 경우", () => {
+// 테스트 그룹 3: 딱 맞게 배정되는 경우
+Deno.test("정확히 인원제한에 맞게 배정되는 경우", async (t) => {
   // Arrange
   const bookTitles = ["파이썬 기초", "자바스크립트 기초", "Go 언어"];
   const users: ReactionUser[] = [
@@ -143,24 +151,30 @@ Deno.test("정확히 인원제한에 맞게 배정되는 경우", () => {
     personLimit
   );
   
-  // 모든 사용자가 초기 그룹에 배정되어야 함 (초과 인원 없음)
-  assertEquals(unassignedUsers.length, 0);
-  
   // 재배치 함수 호출 (아무 일도 일어나지 않아야 함)
   reassignUnassignedUsers(bookGroups, unassignedUsers, personLimit);
   
-  // Assert - 원래 배정과 동일해야 함
-  assertEquals(bookGroups[0].members.length, 3);
-  assertEquals(bookGroups[1].members.length, 4);
-  assertEquals(bookGroups[2].members.length, 2);
+  // 서브테스트 1: 미할당 인원 없음 검증
+  await t.step("미할당 인원 없음", () => {
+    assertEquals(unassignedUsers.length, 0, "미할당 인원이 없어야 함");
+  });
   
-  // 두 번째 그룹만 가득 차 있어야 함
-  assertEquals(bookGroups[0].isFull, false);
-  assertEquals(bookGroups[1].isFull, true);
-  assertEquals(bookGroups[2].isFull, false);
+  // 서브테스트 2: 그룹별 인원 검증
+  await t.step("각 그룹의 인원이 초기 배정과 동일함", () => {
+    assertEquals(bookGroups[0].members.length, 3, "첫 번째 그룹은 3명이어야 함");
+    assertEquals(bookGroups[1].members.length, 4, "두 번째 그룹은 4명이어야 함");
+    assertEquals(bookGroups[2].members.length, 2, "세 번째 그룹은 2명이어야 함");
+  });
   
-  console.log("모든 그룹 구성:");
-  bookGroups.forEach(group => {
-    console.log(`'${group.bookTitle}' 그룹: ${group.members.length}/${personLimit}명`);
+  // 서브테스트 3: 인원제한 충족 상태 검증
+  await t.step("인원제한 충족 상태 확인", () => {
+    assertEquals(bookGroups[0].isFull, false, "첫 번째 그룹은 가득 차지 않아야 함");
+    assertEquals(bookGroups[1].isFull, true, "두 번째 그룹은 가득 차야 함");
+    assertEquals(bookGroups[2].isFull, false, "세 번째 그룹은 가득 차지 않아야 함");
+    
+    console.log("모든 그룹 구성:");
+    bookGroups.forEach(group => {
+      console.log(`'${group.bookTitle}' 그룹: ${group.members.length}/${personLimit}명`);
+    });
   });
 }); 
