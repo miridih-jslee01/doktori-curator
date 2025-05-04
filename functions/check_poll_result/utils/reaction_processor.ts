@@ -4,6 +4,7 @@
 import { ReactionUser, SlackReaction } from "./types.ts";
 import { EMOJI_MAPPING } from "../../utils/emoji_mapping.ts";
 import { SlackAPIClient } from "deno-slack-sdk/types.ts";
+import { chunkArray } from "../../utils/arrays.ts";
 
 // ===== 봇 필터링 관련 기능 =====
 
@@ -25,6 +26,8 @@ function extractUniqueUserIds(reactions: SlackReaction[]): Set<string> {
 
 /**
  * 사용자 ID가 봇인지 확인하기 위한 맵을 생성합니다.
+ * Promise.all을 사용하여 병렬로 API 요청을 처리하되,
+ * 안정성을 위해 배치 처리와 최대 동시 요청 수 제한을 적용합니다.
  *
  * @param userIds 사용자 ID 세트
  * @param client 슬랙 API 클라이언트
@@ -36,22 +39,43 @@ async function createUserBotMap(
 ): Promise<Map<string, boolean>> {
   const userBotMap = new Map<string, boolean>();
 
-  for (const userId of userIds) {
-    try {
-      const userResponse = await client.users.info({
-        user: userId,
-      });
+  // 한 번에 처리할 최대 요청 수
+  const BATCH_SIZE = 10;
 
-      userBotMap.set(
-        userId,
-        Boolean(userResponse.ok && userResponse.user?.is_bot),
-      );
-    } catch (error) {
-      console.warn(
-        `사용자 정보를 가져오는데 실패했습니다 (userId: ${userId}): ${error}`,
-      );
-      // 오류 발생 시 기본적으로 봇이 아닌 것으로 처리
-      userBotMap.set(userId, false);
+  // 사용자 ID 배열을 청크로 나누기
+  const userIdArray = Array.from(userIds);
+  const userIdChunks = chunkArray(userIdArray, BATCH_SIZE);
+
+  // 각 청크마다 병렬 처리
+  for (const chunk of userIdChunks) {
+    const chunkPromises = chunk.map(async (userId) => {
+      try {
+        const userResponse = await client.users.info({
+          user: userId,
+        });
+
+        return {
+          userId,
+          isBot: Boolean(userResponse.ok && userResponse.user?.is_bot),
+        };
+      } catch (error) {
+        console.warn(
+          `사용자 정보를 가져오는데 실패했습니다 (userId: ${userId}): ${error}`,
+        );
+        // 오류 발생 시 기본적으로 봇이 아닌 것으로 처리
+        return {
+          userId,
+          isBot: false,
+        };
+      }
+    });
+
+    // 현재 청크의 모든 요청 병렬 처리
+    const results = await Promise.all(chunkPromises);
+
+    // 결과를 Map에 추가
+    for (const result of results) {
+      userBotMap.set(result.userId, result.isBot);
     }
   }
 
