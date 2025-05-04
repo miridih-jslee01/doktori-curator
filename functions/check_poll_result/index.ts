@@ -99,6 +99,15 @@ export default SlackFunction(
       );
       filledGroups.sort((a, b) => a.bookIndex - b.bookIndex);
 
+      // filledGroups와 messages 간의 매핑을 유지하기 위해 새로운 배열 생성
+      const sortedMessages = filledGroups.map((group) => {
+        // 원래 bookGroups에서의 인덱스를 찾아서 해당 메시지를 가져옴
+        const originalIndex = bookGroups.findIndex(
+          (originalGroup) => originalGroup.bookIndex === group.bookIndex,
+        );
+        return messages[originalIndex];
+      });
+
       // 총 참여 인원수 계산
       const totalParticipants = filledGroups.reduce(
         (sum, group) => sum + group.members.length,
@@ -124,12 +133,13 @@ export default SlackFunction(
       for (let i = 0; i < filledGroups.length; i++) {
         const group = filledGroups[i];
 
-        // 채널에 직접 전송 (thread_ts 없이)
+        // 채널에 직접 전송 (thread_ts 없이) - sortedMessages 사용
         const messageResponse = await client.chat.postMessage({
           channel: inputs.channel_id,
-          text: messages[i],
+          text: sortedMessages[i],
           mrkdwn: true,
         });
+        console.log(messageResponse);
 
         // 메시지 전송 성공 시 그룹 정보 저장
         if (messageResponse.ok && messageResponse.ts) {
