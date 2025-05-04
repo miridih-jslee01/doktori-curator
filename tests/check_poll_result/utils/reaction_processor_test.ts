@@ -1,5 +1,5 @@
 import { assertEquals } from "jsr:@std/assert";
-import { extractUsersFromReactions } from "../../../functions/check_poll_result/utils/user_extractor.ts";
+import { extractUsersFromReactions } from "../../../functions/check_poll_result/utils/reaction_processor.ts";
 import { SlackReaction } from "../../../functions/check_poll_result/utils/types.ts";
 
 // 기본 시나리오용 공통 테스트 데이터

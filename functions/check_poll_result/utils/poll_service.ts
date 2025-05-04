@@ -2,7 +2,7 @@
  * 투표 결과 처리의 메인 로직을 담당하는 모듈
  */
 import { BookGroup, SlackReaction } from "./types.ts";
-import { extractUsersFromReactions } from "./user_extractor.ts";
+import { extractUsersFromReactions } from "./reaction_processor.ts";
 import {
   assignUsersToGroups,
   reassignUnassignedUsers,
