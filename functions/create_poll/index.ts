@@ -29,11 +29,9 @@ export const CreatePollFunction = DefineFunction({
   },
   output_parameters: {
     properties: {
-      channel_id: { type: Schema.types.string },
       message_ts: { type: Schema.types.string },
-      person_limit: { type: Schema.types.number },
     },
-    required: ["channel_id", "message_ts", "person_limit"],
+    required: ["message_ts"],
   },
 });
 
@@ -47,7 +45,6 @@ export default SlackFunction(
     }
 
     const { items } = parsedItems;
-    console.log(items);
 
     const personLimit = inputs.person_limit || 0;
 
@@ -70,7 +67,6 @@ export default SlackFunction(
         text,
         mrkdwn: true,
       });
-      console.log(post);
 
       // 5) 리액션 추가
       await addReactionsToMessage(
@@ -83,10 +79,7 @@ export default SlackFunction(
       // 6) 워크플로우에 반환할 output 값
       return {
         outputs: {
-          channel_id: post.channel!,
           message_ts: post.ts!,
-          person_limit: personLimit,
-          poll_items: inputs.poll_items,
         },
       };
     } catch (error: unknown) {
