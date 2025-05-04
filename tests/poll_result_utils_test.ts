@@ -1,9 +1,11 @@
 import { assertEquals } from "jsr:@std/assert";
 import {
   ReactionUser,
+} from "../functions/poll/types.ts";
+import {
   assignUsersToGroups,
   reassignUnassignedUsers,
-} from "../functions/utils/poll_result_utils.ts";
+} from "../functions/poll/group_assignment.ts";
 
 // 테스트 그룹 1: 기본 시나리오 - 인원 초과 그룹에서 다른 그룹으로 재배치
 Deno.test("기본 시나리오: 인원 초과된 그룹에서 다른 그룹으로 재배치", async (t) => {

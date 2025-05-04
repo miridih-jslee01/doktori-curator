@@ -1,11 +1,6 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import {
-  assignUsersToGroups,
-  createGroupStatusMessage,
-  extractUsersFromReactions,
-  ReactionUser,
-  reassignUnassignedUsers,
-} from "./utils/poll_result_utils.ts";
+import { processPollResult } from "./poll/poll_service.ts";
+import { SlackReaction } from "./poll/types.ts";
 
 export const CheckPollResultFunction = DefineFunction({
   callback_id: "check_poll_result",
@@ -69,42 +64,37 @@ export default SlackFunction(
         };
       }
 
-      // 3. 사용자 리액션 정보 수집 및 가공
-      const allUsers: ReactionUser[] = extractUsersFromReactions(
-        reactionsResponse.message.reactions,
+      // 3. 투표 결과 처리 - 리팩토링된 서비스 활용
+      const { groups: bookGroups, messages } = processPollResult(
+        reactionsResponse.message.reactions as SlackReaction[],
         bookTitles,
+        inputs.person_limit,
       );
 
-      // 사용자가 없으면 오류 반환
-      if (allUsers.length === 0) {
+      // 결과가 없으면 오류 반환
+      if (bookGroups.length === 0) {
         return {
           error: "투표에 참여한 사용자가 없습니다.",
         };
       }
 
-      // 4. 책별로 사용자 그룹화 및 인원제한 처리
-      const { bookGroups, unassignedUsers } = assignUsersToGroups(
-        allUsers,
-        bookTitles,
-        inputs.person_limit,
-      );
-
-      // 5. 미할당 사용자를 다른 그룹으로 재배치
-      reassignUnassignedUsers(bookGroups, unassignedUsers, inputs.person_limit);
-
-      // 6. 최종 결과를 채널에 직접 메시지로 보냄
+      // 책 인덱스 순서대로 정렬 (1, 2, 3, 4 순서로 표시)
       const filledGroups = bookGroups.filter((group) =>
         group.members.length > 0
       );
-
-      // 책 인덱스 순서대로 정렬 (1, 2, 3, 4 순서로 표시)
       filledGroups.sort((a, b) => a.bookIndex - b.bookIndex);
+
+      // 총 참여 인원수 계산
+      const totalParticipants = filledGroups.reduce(
+        (sum, group) => sum + group.members.length,
+        0,
+      );
 
       let resultSummary = "";
 
       // 먼저 결과 요약 메시지를 보냄
       const summaryText =
-        `📊 *도서 투표 결과*\n총 ${allUsers.length}명이 참여했습니다. ${filledGroups.length}개 그룹이 생성되었습니다.`;
+        `📊 *도서 투표 결과*\n총 ${totalParticipants}명이 참여했습니다. ${filledGroups.length}개 그룹이 생성되었습니다.`;
 
       await client.chat.postMessage({
         channel: inputs.channel_id,
@@ -113,17 +103,13 @@ export default SlackFunction(
       });
 
       // 각 그룹의 결과를 채널에 직접 전송
-      for (const group of filledGroups) {
-        // 그룹 메시지 생성
-        const groupMessage = createGroupStatusMessage(
-          group,
-          inputs.person_limit,
-        );
+      for (let i = 0; i < filledGroups.length; i++) {
+        const group = filledGroups[i];
 
         // 채널에 직접 전송 (thread_ts 없이)
         await client.chat.postMessage({
           channel: inputs.channel_id,
-          text: groupMessage,
+          text: messages[i],
           mrkdwn: true,
         });
 
@@ -135,7 +121,7 @@ export default SlackFunction(
       return {
         outputs: {
           result_summary:
-            `투표 결과: 총 ${allUsers.length}명 참여, ${filledGroups.length}개 그룹 생성\n${resultSummary}`,
+            `투표 결과: 총 ${totalParticipants}명 참여, ${filledGroups.length}개 그룹 생성\n${resultSummary}`,
         },
       };
     } catch (error) {

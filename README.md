@@ -51,10 +51,17 @@
 functions/
 ├── create_poll.ts - 도서 투표 생성 함수
 ├── check_poll_result.ts - 투표 결과 확인 및 그룹 구성 함수
+├── poll/
+│   ├── types.ts - 투표 관련 타입 정의
+│   ├── user_extractor.ts - 사용자 추출 모듈
+│   ├── group_assignment.ts - 그룹 할당 모듈
+│   ├── message_formatter.ts - 메시지 포맷팅 모듈
+│   └── poll_service.ts - 투표 처리 메인 모듈
 └── utils/
+    ├── arrays.ts - 배열 관련 순수 유틸리티
     ├── emoji_mapping.ts - 숫자 이모지 매핑
     ├── poll_utils.ts - 투표 생성 관련 유틸리티
-    └── poll_result_utils.ts - 투표 결과 처리 유틸리티
+    └── poll_result_utils.ts - (레거시) 투표 결과 처리 유틸리티
 ```
 
 ## 설정 방법
