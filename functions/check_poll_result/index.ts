@@ -64,11 +64,13 @@ export default SlackFunction(
         };
       }
 
-      // 2-1. 봇 사용자 ID 목록 수집
+      // 2-1. 모든 반응 가져오기
       const reactions = reactionsResponse.message.reactions as SlackReaction[];
-      const botUserIds: string[] = [];
 
-      // 모든 반응에서 사용자 ID 목록 추출
+      // 2-2. 사용자 ID가 봇인지 확인하기 위한 맵 생성
+      const userBotMap = new Map<string, boolean>();
+
+      // 모든 반응에서 사용자 ID 추출
       const allUserIds = new Set<string>();
       for (const reaction of reactions) {
         for (const userId of reaction.users) {
@@ -82,24 +84,38 @@ export default SlackFunction(
           const userResponse = await client.users.info({
             user: userId,
           });
-          console.log(userResponse);
 
-          if (userResponse.ok && userResponse.user?.is_bot) {
-            botUserIds.push(userId);
-          }
+          // 사용자 ID와 봇 여부를 맵에 저장
+          userBotMap.set(
+            userId,
+            Boolean(userResponse.ok && userResponse.user?.is_bot),
+          );
         } catch (error) {
           console.warn(
             `사용자 정보를 가져오는데 실패했습니다 (userId: ${userId}): ${error}`,
           );
+          // 오류 발생 시 기본적으로 봇이 아닌 것으로 처리
+          userBotMap.set(userId, false);
         }
       }
 
-      // 3. 투표 결과 처리 - 리팩토링된 서비스 활용 (봇 사용자 ID 전달)
+      // 2-3. 각 반응의 사용자 배열에서 봇 사용자 필터링
+      const filteredReactions = reactions.map((reaction) => {
+        return {
+          ...reaction,
+          users: reaction.users.filter((userId) => !userBotMap.get(userId)),
+          // count 업데이트 (필터링 후 남은 사용자 수로)
+          count: reaction.users.filter((userId) =>
+            !userBotMap.get(userId)
+          ).length,
+        };
+      });
+
+      // 3. 투표 결과 처리 - 봇이 필터링된 reactions 배열 전달
       const { groups: bookGroups, messages } = processPollResult(
-        reactions,
+        filteredReactions,
         bookTitles,
         inputs.person_limit,
-        botUserIds,
       );
 
       // 결과가 없으면 오류 반환
