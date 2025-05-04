@@ -23,11 +23,12 @@
       "triggers",
       "types",
       "views",
-      "workflows"
+      "workflows",
+      "tests"
     ]
   },
   "lock": false,
   "tasks": {
-    "test": "deno fmt --check && deno lint && deno test --allow-read --allow-none"
+    "test": "deno fmt --check && deno lint && deno test --allow-read --allow-net"
   }
 }
