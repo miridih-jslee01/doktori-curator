@@ -1,0 +1,26 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Doktori Curator 핵심 설계 원칙
+
+## 프로젝트 구조
+- **코어 폴더**: `_types`, `_validators`, `_constants`, `utils` 등 공통 모듈은 언더스코어(_)로 시작하거나 `utils` 폴더에 배치
+- **도메인 폴더**: 각 기능(create_poll, check_poll_result, select_presenter 등)은 별도 폴더에 배치
+
+## 아키텍처 원칙
+1. **도메인 분리**: 각 도메인 로직은 해당 도메인 폴더에 유지
+2. **간접 의존성**: 도메인 간 직접 의존성을 피하고, 공통 모듈을 통해 간접적으로 연결
+3. **중복 방지**: 여러 도메인에서 사용되는 코드는 공통 모듈로 추출하여 재사용
+
+## 코드 패턴
+1. **슬랙 함수**: 모든 슬랙 함수는 DefineFunction과 SlackFunction을 사용하여 정의
+2. **검증 로직**: 데이터는 항상 validate* 함수를 통해 검증 수행
+3. **안전한 파싱**: JSON 데이터는 safeParse* 함수를 통해 안전하게 파싱
+4. **에러 처리**: 모든 비동기 함수는 try-catch로 감싸고 표준화된 에러 형식 사용
+
+## 네이밍 규칙
+- 파일명: 소문자와 언더스코어 사용 (snake_case)
+- 변수/함수: 카멜 케이스 사용 (camelCase)
+- 인터페이스/타입: 파스칼 케이스 사용 (PascalCase)
