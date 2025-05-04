@@ -10,6 +10,7 @@ import { SelectPresenterFunction } from "./functions/select_presenter/index.ts";
  */
 export default Manifest({
   name: "doktori-curator",
+  displayName: "Doktori Curator",
   description: "독서동호회 독토리 운영을 위한 커스텀 스텝을 제공합니다.",
   icon: "assets/icon.png",
   functions: [
