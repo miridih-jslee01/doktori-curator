@@ -1,7 +1,7 @@
-# 도서 투표 큐레이터
+# 독토리 큐레이터
 
-슬랙에서 도서 투표를 생성하고 투표 결과에 따라 그룹을 자동으로 구성하는 슬랙
-워크플로우 앱입니다.
+슬랙에서 도서 투표를 생성하고 투표 결과에 따라 그룹을 자동으로 구성하며, 각
+그룹의 발제자를 선정하는 슬랙 워크플로우 앱입니다.
 
 ## 주요 기능
 
@@ -30,41 +30,62 @@
 - 투표한 사용자들에게 멘션으로 알림을 보냅니다.
 - 투표 생성 시 설정한 인원 제한 수를 자동으로 받아 사용합니다.
 
+### 3. 발제자 선정 (`SelectPresenterFunction`)
+
+- 각 책 그룹에서 랜덤으로 발제자 겸 진행자를 선정합니다.
+- 선정된 발제자는 해당 그룹의 스레드에 알림 메시지로 공지됩니다.
+- 선정 과정에서 공정성을 위해 무작위 선정 방식을 사용합니다.
+
 ### 결과 표시 형식
 
-1. 먼저 투표 결과 요약 메시지가 채널에 게시됩니다.
+1. 투표 결과 요약 메시지:
 
    ```
-   📊 도서 투표 결과
+   📊 *도서 투표 결과*
    총 X명이 참여했습니다. X개 그룹이 생성되었습니다.
    ```
 
-2. 이어서 각 그룹 정보가 채널에 별도 메시지로 게시됩니다.
+2. 각 그룹 정보 메시지:
+
    ```
-   📚 도서명 (X/4명) ✅ 인원이 모두 찼습니다!
+   📚 *도서명* (X/4명)
    @사용자1 @사용자2 @사용자3 @사용자4
+   ```
+
+3. 발제자 선정 결과 메시지 (그룹 스레드에 표시):
+   ```
+   📚 *도서명 발제자 선정 결과*
+   @사용자1님이 랜덤으로 발제자 겸 진행자로 선정되었습니다! 🎉
    ```
 
 ## 프로젝트 구조
 
 ```
 functions/
-├── create_poll.ts - 도서 투표 생성 함수 (리다이렉트)
+├── _types/ - 공통 타입 정의
+│   └── book_group.ts - 책 그룹 관련 타입
+├── _utils/ - 공통 유틸리티
+│   ├── arrays.ts - 배열 관련 유틸리티 (셔플, 정렬 등)
+│   └── emoji_mapping.ts - 숫자 이모지 매핑 정보
+├── _validators/ - 공통 데이터 검증 모듈
+│   └── book_group_validator.ts - 책 그룹 데이터 검증
 ├── create_poll/ - 도서 투표 생성 도메인
 │   ├── index.ts - 주요 함수 파일
 │   └── utils/
 │       └── poll_utils.ts - 투표 생성 관련 유틸리티
-├── check_poll_result.ts - 투표 결과 확인 함수 (리다이렉트)
 ├── check_poll_result/ - 투표 결과 확인 도메인
 │   ├── index.ts - 주요 함수 파일
-│   ├── types.ts - 타입 정의
-│   ├── user_extractor.ts - 사용자 추출 모듈
-│   ├── group_assignment.ts - 그룹 할당 모듈
-│   ├── message_formatter.ts - 메시지 포맷팅 모듈
-│   └── poll_service.ts - 투표 처리 메인 모듈
-└── utils/ - 공유 유틸리티
-    ├── arrays.ts - 배열 관련 순수 유틸리티
-    └── emoji_mapping.ts - 숫자 이모지 매핑
+│   └── utils/
+│       ├── group_processor.ts - 그룹 처리 및 정렬
+│       ├── message_formatter.ts - 메시지 포맷팅
+│       ├── poll_service.ts - 투표 처리 메인 모듈
+│       ├── reaction_processor.ts - 이모지 반응 처리
+│       └── types.ts - 도메인별 타입 정의
+└── select_presenter/ - 발제자 선정 도메인
+    ├── index.ts - 주요 함수 파일
+    └── utils/
+        ├── message_formatter.ts - 발제자 선정 메시지 포맷팅
+        └── presenter_service.ts - 발제자 선정 비즈니스 로직
 ```
 
 ## 설정 방법
@@ -75,10 +96,13 @@ functions/
 3. `CheckPollResultFunction`을 사용하여 투표 결과 확인 스텝 추가
    - `CreatePollFunction`의 출력값(channel_id, message_ts, person_limit,
      poll_items)을 입력값으로 연결
+4. `SelectPresenterFunction`을 사용하여 발제자 선정 스텝 추가
+   - `CheckPollResultFunction`의 출력값(book_groups)을 입력값으로 연결
 
 ## 참고 사항
 
-- 투표 생성 후 자동으로 숫자 이모지가 추가됩니다.
+- 봇 메시지의 이름을 사용자 정의하려면 `chat.postMessage` 호출 시 `username`
+  파라미터를 추가하세요.
 - 투표 결과 확인은 스케줄링을 통해 마감 시간 이후에 자동으로 실행되도록 설정할
   수 있습니다.
 - 인원제한은 워크플로우 실행 시 파라미터로 지정할 수 있습니다.
