@@ -1,6 +1,10 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { shuffle } from "../_utils/arrays.ts";
 import { safeParseBookGroups } from "../_validators/book_group_validator.ts";
+import { selectPresenters } from "./utils/presenter_service.ts";
+import {
+  formatGroupResultMessage,
+  formatSummaryMessage,
+} from "./utils/message_formatter.ts";
 
 export const SelectPresenterFunction = DefineFunction({
   callback_id: "select_presenter",
@@ -35,7 +39,7 @@ export default SlackFunction(
   SelectPresenterFunction,
   async ({ inputs, client }) => {
     try {
-      // 책 그룹 정보 안전하게 파싱
+      // 1. 책 그룹 정보 안전하게 파싱
       const parseResult = safeParseBookGroups(inputs.book_groups);
       console.log("Parse result:", parseResult);
 
@@ -55,51 +59,36 @@ export default SlackFunction(
         };
       }
 
-      let resultSummary = "📚 *발제자 선정 결과*\n";
+      // 2. 빈 그룹과 유효한 그룹 분리
+      const emptyGroupTitles = bookGroups
+        .filter((group) => !group.members || group.members.trim() === "")
+        .map((group) => group.bookTitle);
 
-      // 각 그룹에 대해 발제자 선정 처리
-      for (const group of bookGroups) {
-        const { bookTitle, members, thread_ts } = group;
+      // 3. 발제자 선정 (비즈니스 로직 분리)
+      const presenterResults = selectPresenters(bookGroups);
 
-        // 멤버 목록 파싱
-        const memberIds = members.split(",").map((id) => id.trim());
+      // 4. 결과 메시지 생성 및 전송
+      const messagePromises = presenterResults.map((result) => {
+        const message = formatGroupResultMessage(result);
 
-        if (memberIds.length === 0) {
-          resultSummary +=
-            `[${bookTitle}] 멤버가 없어 발제자를 선정할 수 없습니다.\n`;
-          continue;
-        }
-
-        // 발제자 랜덤 선정 (모든 멤버 중에서)
-        const presenterId = shuffle(memberIds)[0];
-        const selectionMethod = "랜덤으로";
-
-        // 그룹별 결과 메시지 생성
-        const resultMessage =
-          `📚 *[${bookTitle}] 발제자 선정 결과*\n<@${presenterId}>님이 ${selectionMethod} 발제자 겸 진행자로 선정되었습니다! 🎉\n\n다른 분이 발제자를 맡고 싶으시면 이 메시지에 :o: 이모지로 반응해주세요.`;
-
-        // 선정 결과를 스레드에 게시
-        await client.chat.postMessage({
+        return client.chat.postMessage({
           channel: inputs.channel_id,
-          thread_ts: thread_ts,
-          text: resultMessage,
+          thread_ts: result.thread_ts,
+          text: message,
           mrkdwn: true,
         });
-        console.log(
-          {
-            channel: inputs.channel_id,
-            thread_ts: thread_ts,
-            text: resultMessage,
-            mrkdwn: true,
-          },
-        );
+      });
 
-        // 결과 요약에 추가
-        resultSummary +=
-          `[${bookTitle}] <@${presenterId}> (${selectionMethod})\n`;
-      }
+      // 5. 모든 메시지 전송을 병렬로 처리
+      await Promise.all(messagePromises);
 
-      // 결과 반환
+      // 6. 결과 요약 생성
+      const resultSummary = formatSummaryMessage(
+        presenterResults,
+        emptyGroupTitles,
+      );
+
+      // 7. 결과 반환
       return {
         outputs: {
           result_summary: resultSummary,
