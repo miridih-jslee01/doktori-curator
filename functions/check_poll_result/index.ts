@@ -2,7 +2,7 @@ import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { processPollResult } from "./utils/poll_service.ts";
 import { SlackReaction } from "./utils/types.ts";
 import { filterBotUsersFromReactions } from "./utils/reaction_processor.ts";
-import { safeStringifyBookGroups } from "../utils/validators.ts";
+import { safeStringifyBookGroups } from "../_validators/book_group_validator.ts";
 
 export const CheckPollResultFunction = DefineFunction({
   callback_id: "check_poll_result",
