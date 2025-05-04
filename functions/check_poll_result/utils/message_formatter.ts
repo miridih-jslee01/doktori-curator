@@ -1,7 +1,7 @@
 /**
  * 그룹 관련 메시지 포맷팅을 담당하는 모듈
  */
-import { BookGroup } from "../utils/types.ts";
+import { BookGroup } from "./types.ts";
 
 /**
  * 그룹 상태 메시지를 생성합니다.

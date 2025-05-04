@@ -6,7 +6,7 @@ import {
   safeParseArray,
   safeStringifyArray,
   ValidationResult,
-} from "../utils/validators.ts";
+} from "../_utils/validators.ts";
 import { BookGroup } from "../_types/book_group.ts";
 
 /**

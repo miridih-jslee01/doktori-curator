@@ -1,5 +1,5 @@
 import { SlackAPIClient } from "deno-slack-sdk/types.ts";
-import { EMOJI_MAPPING } from "../../utils/emoji_mapping.ts";
+import { EMOJI_MAPPING } from "../../_utils/emoji_mapping.ts";
 
 // 투표 항목 파싱 및 검증
 export function parseAndValidatePollItems(

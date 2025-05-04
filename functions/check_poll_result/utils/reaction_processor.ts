@@ -2,9 +2,9 @@
  * 투표 반응 처리 모듈 - 사용자 필터링 및 데이터 추출 관련 기능
  */
 import { ReactionUser, SlackReaction } from "./types.ts";
-import { EMOJI_MAPPING } from "../../utils/emoji_mapping.ts";
+import { EMOJI_MAPPING } from "../../_utils/emoji_mapping.ts";
 import { SlackAPIClient } from "deno-slack-sdk/types.ts";
-import { chunkArray } from "../../utils/arrays.ts";
+import { chunkArray } from "../../_utils/arrays.ts";
 
 // ===== 봇 필터링 관련 기능 =====
 

@@ -1,5 +1,5 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { shuffle } from "../utils/arrays.ts";
+import { shuffle } from "../_utils/arrays.ts";
 import { safeParseBookGroups } from "../_validators/book_group_validator.ts";
 
 export const SelectPresenterFunction = DefineFunction({

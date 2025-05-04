@@ -6,7 +6,7 @@ alwaysApply: false
 # Doktori Curator 핵심 설계 원칙
 
 ## 프로젝트 구조
-- **코어 폴더**: `_types`, `_validators`, `_constants`, `utils` 등 공통 모듈은 언더스코어(_)로 시작하거나 `utils` 폴더에 배치
+- **코어 폴더**: `_types`, `_validators`, `_constants`, `_utils` 등 공통 모듈은 언더스코어(_)로 시작.
 - **도메인 폴더**: 각 기능(create_poll, check_poll_result, select_presenter 등)은 별도 폴더에 배치
 
 ## 아키텍처 원칙
