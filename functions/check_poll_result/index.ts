@@ -64,11 +64,42 @@ export default SlackFunction(
         };
       }
 
-      // 3. 투표 결과 처리 - 리팩토링된 서비스 활용
+      // 2-1. 봇 사용자 ID 목록 수집
+      const reactions = reactionsResponse.message.reactions as SlackReaction[];
+      const botUserIds: string[] = [];
+
+      // 모든 반응에서 사용자 ID 목록 추출
+      const allUserIds = new Set<string>();
+      for (const reaction of reactions) {
+        for (const userId of reaction.users) {
+          allUserIds.add(userId);
+        }
+      }
+
+      // 각 사용자 ID에 대해 users.info API 호출하여 봇 여부 확인
+      for (const userId of allUserIds) {
+        try {
+          const userResponse = await client.users.info({
+            user: userId,
+          });
+          console.log(userResponse);
+
+          if (userResponse.ok && userResponse.user?.is_bot) {
+            botUserIds.push(userId);
+          }
+        } catch (error) {
+          console.warn(
+            `사용자 정보를 가져오는데 실패했습니다 (userId: ${userId}): ${error}`,
+          );
+        }
+      }
+
+      // 3. 투표 결과 처리 - 리팩토링된 서비스 활용 (봇 사용자 ID 전달)
       const { groups: bookGroups, messages } = processPollResult(
-        reactionsResponse.message.reactions as SlackReaction[],
+        reactions,
         bookTitles,
         inputs.person_limit,
+        botUserIds,
       );
 
       // 결과가 없으면 오류 반환

@@ -20,5 +20,6 @@ export default Manifest({
     "chat:write.public",
     "reactions:write",
     "reactions:read",
+    "users:read",
   ],
 });

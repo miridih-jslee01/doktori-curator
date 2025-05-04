@@ -15,15 +15,17 @@ import { createGroupStatusMessage } from "./message_formatter.ts";
  * @param reactions 슬랙 리액션 배열
  * @param bookTitles 투표에 포함된 책 제목 배열
  * @param personLimit 그룹당 인원 제한
+ * @param botUserIds 제외할 봇 사용자 ID 배열 (선택적)
  * @returns 구성된 그룹과 그룹별 상태 메시지
  */
 export function processPollResult(
   reactions: SlackReaction[],
   bookTitles: string[],
   personLimit: number,
+  botUserIds: string[] = [],
 ): { groups: BookGroup[]; messages: string[] } {
-  // 1. 사용자 추출
-  const allUsers = extractUsersFromReactions(reactions, bookTitles);
+  // 1. 사용자 추출 - 봇 사용자 제외
+  const allUsers = extractUsersFromReactions(reactions, bookTitles, botUserIds);
 
   if (allUsers.length === 0) {
     return { groups: [], messages: ["아직 투표한 사람이 없습니다."] };
