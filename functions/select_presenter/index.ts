@@ -1,10 +1,7 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { safeParseBookGroups } from "../_validators/book_group_validator.ts";
 import { selectPresenters } from "./utils/presenter_service.ts";
-import {
-  formatGroupResultMessage,
-  formatSummaryMessage,
-} from "./utils/message_formatter.ts";
+import { formatGroupResultMessage } from "./utils/message_formatter.ts";
 
 export const SelectPresenterFunction = DefineFunction({
   callback_id: "select_presenter",
@@ -25,13 +22,8 @@ export const SelectPresenterFunction = DefineFunction({
     required: ["channel_id", "book_groups"],
   },
   output_parameters: {
-    properties: {
-      result_summary: {
-        type: Schema.types.string,
-        description: "발제자 선정 결과 요약",
-      },
-    },
-    required: ["result_summary"],
+    properties: {},
+    required: [],
   },
 });
 
@@ -41,7 +33,6 @@ export default SlackFunction(
     try {
       // 1. 책 그룹 정보 안전하게 파싱
       const parseResult = safeParseBookGroups(inputs.book_groups);
-      console.log("Parse result:", parseResult);
 
       if (!parseResult.success || !parseResult.data) {
         return {
@@ -59,15 +50,10 @@ export default SlackFunction(
         };
       }
 
-      // 2. 빈 그룹과 유효한 그룹 분리
-      const emptyGroupTitles = bookGroups
-        .filter((group) => !group.members || group.members.trim() === "")
-        .map((group) => group.bookTitle);
-
-      // 3. 발제자 선정 (비즈니스 로직 분리)
+      // 2. 발제자 선정 (비즈니스 로직 분리)
       const presenterResults = selectPresenters(bookGroups);
 
-      // 4. 결과 메시지 생성 및 전송
+      // 3. 결과 메시지 생성 및 전송
       const messagePromises = presenterResults.map((result) => {
         const message = formatGroupResultMessage(result);
 
@@ -79,20 +65,12 @@ export default SlackFunction(
         });
       });
 
-      // 5. 모든 메시지 전송을 병렬로 처리
+      // 4. 모든 메시지 전송을 병렬로 처리
       await Promise.all(messagePromises);
 
-      // 6. 결과 요약 생성
-      const resultSummary = formatSummaryMessage(
-        presenterResults,
-        emptyGroupTitles,
-      );
-
-      // 7. 결과 반환
+      // 5. 결과 반환
       return {
-        outputs: {
-          result_summary: resultSummary,
-        },
+        outputs: {},
       };
     } catch (error) {
       const errorMessage = error instanceof Error
