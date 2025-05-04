@@ -1,6 +1,7 @@
 # 도서 투표 큐레이터
 
-슬랙에서 도서 투표를 생성하고 투표 결과에 따라 그룹을 자동으로 구성하는 슬랙 워크플로우 앱입니다.
+슬랙에서 도서 투표를 생성하고 투표 결과에 따라 그룹을 자동으로 구성하는 슬랙
+워크플로우 앱입니다.
 
 ## 주요 기능
 
@@ -62,14 +63,17 @@ functions/
 2. `CreatePollFunction`을 사용하여 투표 생성 스텝 추가
    - 채널 ID, 도서 목록, 인원 제한 수 입력
 3. `CheckPollResultFunction`을 사용하여 투표 결과 확인 스텝 추가
-   - `CreatePollFunction`의 출력값(channel_id, message_ts, person_limit, poll_items)을 입력값으로 연결
+   - `CreatePollFunction`의 출력값(channel_id, message_ts, person_limit,
+     poll_items)을 입력값으로 연결
 
 ## 참고 사항
 
 - 투표 생성 후 자동으로 숫자 이모지가 추가됩니다.
-- 투표 결과 확인은 스케줄링을 통해 마감 시간 이후에 자동으로 실행되도록 설정할 수 있습니다.
+- 투표 결과 확인은 스케줄링을 통해 마감 시간 이후에 자동으로 실행되도록 설정할
+  수 있습니다.
 - 인원제한은 워크플로우 실행 시 파라미터로 지정할 수 있습니다.
-- 사용자 멘션이 제대로 작동하기 위해 필요한 권한(users:read, reactions:read 등)이 설정되어 있습니다.
+- 사용자 멘션이 제대로 작동하기 위해 필요한 권한(users:read, reactions:read
+  등)이 설정되어 있습니다.
 
 ## 설치 및 실행
 
@@ -79,7 +83,8 @@ functions/
 
 ### Slack CLI 설치
 
-[슬랙 CLI 설치 가이드](https://api.slack.com/automation/quickstart)를 따라 CLI를 설치합니다.
+[슬랙 CLI 설치 가이드](https://api.slack.com/automation/quickstart)를 따라 CLI를
+설치합니다.
 
 ### 앱 실행하기
 
