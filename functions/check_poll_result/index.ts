@@ -15,20 +15,19 @@ export const CheckPollResultFunction = DefineFunction({
     properties: {
       channel_id: {
         type: Schema.types.string,
-        description: "메시지가 있는 채널 ID (CreatePollFunction 출력값 사용)",
+        description: "메시지가 있는 채널 ID",
       },
       message_ts: {
         type: Schema.types.string,
-        description:
-          "투표 메시지의 타임스탬프 (CreatePollFunction 출력값 사용)",
+        description: "투표 메시지의 타임스탬프",
       },
       person_limit: {
         type: Schema.types.number,
-        description: "그룹당 인원 제한 수 (CreatePollFunction 출력값 사용)",
+        description: "그룹당 인원 제한 수",
       },
       poll_items: {
         type: Schema.types.string,
-        description: "원본 투표 항목들 (CreatePollFunction 출력값 사용)",
+        description: "원본 투표 항목들",
       },
     },
     required: ["channel_id", "message_ts", "person_limit", "poll_items"],
