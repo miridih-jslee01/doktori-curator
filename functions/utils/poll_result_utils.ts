@@ -22,7 +22,35 @@ export interface BookGroup {
   isFull: boolean; // 인원제한 충족 여부
 }
 
-// 리액션 데이터로부터 사용자 정보 추출
+/**
+ * Fisher-Yates 알고리즘을 사용하여 배열을 무작위로 섞습니다.
+ * 모든 요소가 동일한 확률로 섞이는 공정한 셔플링을 보장합니다.
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  // 원본 배열을 변경하지 않기 위해 복사본 생성
+  const shuffled = [...array];
+
+  // Fisher-Yates 셔플 알고리즘
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled;
+}
+
+/**
+ * 그룹의 인원이 제한에 도달했는지 확인하고 상태를 업데이트합니다.
+ */
+function updateGroupFullStatus(group: BookGroup, personLimit: number): void {
+  if (group.members.length === personLimit) {
+    group.isFull = true;
+  }
+}
+
+/**
+ * 리액션 데이터로부터 사용자 정보를 추출합니다.
+ */
 export function extractUsersFromReactions(
   reactions: SlackReaction[],
   bookTitles: string[],
@@ -35,7 +63,7 @@ export function extractUsersFromReactions(
     const reaction = reactions.find((r) => r.name === emojiInfo.reaction);
 
     // 해당 이모지에 반응한 사용자가 있다면
-    if (reaction && reaction.users && bookIndex < bookTitles.length) {
+    if (reaction?.users && bookIndex < bookTitles.length) {
       // 각 사용자를 배열에 추가
       for (const userId of reaction.users) {
         allUsers.push({
@@ -50,123 +78,154 @@ export function extractUsersFromReactions(
   return allUsers;
 }
 
-// 사용자들을 그룹에 할당하고 초과 인원 처리 (공정한 방식)
+/**
+ * 사용자들을 도서별로 분류합니다.
+ */
+function categorizeUsersByBook(
+  allUsers: ReactionUser[],
+  bookTitlesCount: number,
+): ReactionUser[][] {
+  const usersByBook: ReactionUser[][] = Array(bookTitlesCount)
+    .fill(null)
+    .map(() => []);
+
+  // 각 사용자를 해당 책 그룹에 분류
+  for (const user of allUsers) {
+    if (user.bookIndex < bookTitlesCount) {
+      usersByBook[user.bookIndex].push(user);
+    }
+  }
+
+  return usersByBook;
+}
+
+/**
+ * 책 그룹을 초기화합니다.
+ */
+function initializeBookGroups(bookTitles: string[]): BookGroup[] {
+  return bookTitles.map((title, index) => ({
+    bookIndex: index,
+    bookTitle: title,
+    members: [],
+    isFull: false,
+  }));
+}
+
+/**
+ * 책 그룹에 사용자를 할당합니다. 인원 제한을 초과하는 사용자는 미할당 목록에 추가합니다.
+ */
+function assignUsersToBookGroup(
+  users: ReactionUser[],
+  group: BookGroup,
+  personLimit: number,
+): ReactionUser[] {
+  const unassigned: ReactionUser[] = [];
+
+  // 인원 제한을 초과하면 무작위로 선택
+  if (users.length > personLimit) {
+    // 사용자 목록을 무작위로 섞기
+    const shuffledUsers = shuffleArray(users);
+
+    // personLimit 만큼만 그룹에 추가하고 나머지는 미할당 목록에 추가
+    shuffledUsers.forEach((user, index) => {
+      if (index < personLimit) {
+        group.members.push(user.userId);
+      } else {
+        unassigned.push(user);
+      }
+    });
+
+    updateGroupFullStatus(group, personLimit);
+  } else {
+    // 인원 제한 이하면 모두 할당
+    users.forEach((user) => group.members.push(user.userId));
+    updateGroupFullStatus(group, personLimit);
+  }
+
+  return unassigned;
+}
+
+/**
+ * 사용자들을 그룹에 할당하고 초과 인원을 처리합니다 (공정한 방식).
+ */
 export function assignUsersToGroups(
   allUsers: ReactionUser[],
   bookTitles: string[],
   personLimit: number,
 ): { bookGroups: BookGroup[]; unassignedUsers: ReactionUser[] } {
-  const bookGroups: BookGroup[] = [];
-  const unassignedUsers: ReactionUser[] = [];
+  // 책 그룹 초기화
+  const bookGroups = initializeBookGroups(bookTitles);
+  let unassignedUsers: ReactionUser[] = [];
 
-  // 각 책에 대해 그룹 초기화
-  for (let i = 0; i < bookTitles.length; i++) {
-    bookGroups.push({
-      bookIndex: i,
-      bookTitle: bookTitles[i],
-      members: [],
-      isFull: false,
-    });
-  }
+  // 사용자를 책별로 분류
+  const usersByBook = categorizeUsersByBook(allUsers, bookTitles.length);
 
-  // 각 책별로 투표한 사용자들을 분류
-  const usersByBook: ReactionUser[][] = [];
-  for (let i = 0; i < bookTitles.length; i++) {
-    usersByBook[i] = allUsers.filter((user) => user.bookIndex === i);
-  }
-
-  // 각 책 그룹에 대해 공정하게 사용자 할당
-  for (let i = 0; i < bookTitles.length; i++) {
-    const usersForThisBook = usersByBook[i];
-
-    // 인원 제한보다 많은 사용자가 투표했다면 무작위로 섞어서 공정하게 선택
-    if (usersForThisBook.length > personLimit) {
-      // 사용자 목록을 무작위로 섞기 (Fisher-Yates 셔플 알고리즘)
-      for (let j = usersForThisBook.length - 1; j > 0; j--) {
-        const random = Math.floor(Math.random() * (j + 1));
-        [usersForThisBook[j], usersForThisBook[random]] = [
-          usersForThisBook[random],
-          usersForThisBook[j],
-        ];
-      }
-
-      // personLimit 만큼만 그룹에 추가하고 나머지는 unassignedUsers에 추가
-      for (let j = 0; j < usersForThisBook.length; j++) {
-        if (j < personLimit) {
-          bookGroups[i].members.push(usersForThisBook[j].userId);
-        } else {
-          unassignedUsers.push(usersForThisBook[j]);
-        }
-      }
-
-      // 인원제한에 도달하면 isFull 설정
-      if (bookGroups[i].members.length === personLimit) {
-        bookGroups[i].isFull = true;
-      }
-    } else {
-      // 인원 제한보다 적거나 같은 경우 모두 추가
-      for (const user of usersForThisBook) {
-        bookGroups[i].members.push(user.userId);
-      }
-
-      // 인원제한에 도달하면 isFull 설정
-      if (bookGroups[i].members.length === personLimit) {
-        bookGroups[i].isFull = true;
-      }
-    }
-  }
+  // 각 책 그룹에 사용자 할당
+  bookGroups.forEach((group, index) => {
+    const usersForThisBook = usersByBook[index];
+    const newUnassigned = assignUsersToBookGroup(
+      usersForThisBook,
+      group,
+      personLimit,
+    );
+    unassignedUsers = [...unassignedUsers, ...newUnassigned];
+  });
 
   return { bookGroups, unassignedUsers };
 }
 
-// 미할당 사용자를 다른 그룹으로 재배치
+/**
+ * 그룹을 기반으로 사용자를 재배치할 대상 그룹을 선택합니다.
+ */
+function selectTargetGroup(nonFullGroups: BookGroup[]): {
+  targetGroup: BookGroup;
+  groupIndex: number;
+} {
+  const groupIndex = Math.floor(Math.random() * nonFullGroups.length);
+  return {
+    targetGroup: nonFullGroups[groupIndex],
+    groupIndex,
+  };
+}
+
+/**
+ * 미할당 사용자를 다른 그룹으로 재배치합니다.
+ */
 export function reassignUnassignedUsers(
   bookGroups: BookGroup[],
   unassignedUsers: ReactionUser[],
   personLimit: number,
 ): void {
-  if (unassignedUsers.length > 0) {
-    // 인원이 덜 찬 그룹 필터링
-    const nonFullGroups = bookGroups.filter((group) => !group.isFull);
+  if (unassignedUsers.length === 0) return;
 
-    // 인원이 덜 찬 그룹이 있다면 재배치
-    if (nonFullGroups.length > 0) {
-      // 미할당 사용자도 무작위로 섞어서 공정하게 재배치
-      // Fisher-Yates 셔플 알고리즘
-      for (let i = unassignedUsers.length - 1; i > 0; i--) {
-        const random = Math.floor(Math.random() * (i + 1));
-        [unassignedUsers[i], unassignedUsers[random]] = [
-          unassignedUsers[random],
-          unassignedUsers[i],
-        ];
-      }
+  // 인원이 덜 찬 그룹 필터링
+  const nonFullGroups = bookGroups.filter((group) => !group.isFull);
+  if (nonFullGroups.length === 0) return;
 
-      for (const user of unassignedUsers) {
-        // 랜덤하게 그룹 선택 (단순 랜덤 배정)
-        const randomGroupIndex = Math.floor(
-          Math.random() * nonFullGroups.length,
-        );
-        const targetGroup = nonFullGroups[randomGroupIndex];
+  // 미할당 사용자를 무작위로 섞어 공정하게 재배치
+  const shuffledUsers = shuffleArray(unassignedUsers);
 
-        // 그룹에 사용자 추가
-        targetGroup.members.push(user.userId);
+  // 각 미할당 사용자 재배치
+  for (const user of shuffledUsers) {
+    if (nonFullGroups.length === 0) break;
 
-        // 그룹이 가득 찼다면 목록에서 제거
-        if (targetGroup.members.length === personLimit) {
-          targetGroup.isFull = true;
-          nonFullGroups.splice(randomGroupIndex, 1);
+    // 랜덤하게 그룹 선택
+    const { targetGroup, groupIndex } = selectTargetGroup(nonFullGroups);
 
-          // 더 이상 할당할 그룹이 없으면 종료
-          if (nonFullGroups.length === 0) {
-            break;
-          }
-        }
-      }
+    // 그룹에 사용자 추가
+    targetGroup.members.push(user.userId);
+
+    // 그룹이 가득 찼다면 목록에서 제거
+    if (targetGroup.members.length === personLimit) {
+      targetGroup.isFull = true;
+      nonFullGroups.splice(groupIndex, 1);
     }
   }
 }
 
-// 그룹 상태 메시지 생성
+/**
+ * 그룹 상태 메시지를 생성합니다.
+ */
 export function createGroupStatusMessage(
   group: BookGroup,
   personLimit: number,
