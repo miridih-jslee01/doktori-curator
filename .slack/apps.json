@@ -1,1 +1,10 @@
-{}
+{
+  "apps": {
+    "T04HSP44K": {
+      "app_id": "A08RH0D6D96",
+      "team_domain": "miridih",
+      "team_id": "T04HSP44K"
+    }
+  },
+  "default": "miridih"
+}
