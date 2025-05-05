@@ -40,13 +40,18 @@ export function createPollMessageText(
 
   const formattedDate = getFormattedDateAfterDays(deadlineDays);
 
-  return `<!channel>\n${itemsWithEmojis}
-    
-  📌 *투표 참여 방법*
-  1. 👆 원하는 도서 *이모지를 눌러* 투표하세요.
-  2. 🔄 그룹당 인원은 *${personLimit}명* 으로 제한됩니다. 초과 시 투표 마감시 다른 그룹으로 자동 배정됩니다.
-  3. ⏰ 투표마감은 *${formattedDate}* 입니다!
-  `;
+  return `📚 *독토리 정기 독서모임 도서 투표* 📚
+
+안녕하세요, <!channel> 여러분! 🌱 이번 달 독토리 정기모임에서 함께 나눌 도서를 선정하는 시간입니다.
+
+${itemsWithEmojis}
+
+📌 *투표 안내* 
+1. 읽고 싶은 책의 숫자 *이모지를 눌러* 마음을 표현해주세요.
+2. 각 책 그룹은 *${personLimit}명* 까지 함께합니다.
+   • 인원 초과 그룹은 투표 마감 시 시스템이 자동으로 다른 그룹에 배정해 드립니다.
+   • 그룹이 다르더라도 회원들끼리 책을 빌려 읽을 수 있습니다. 
+3. ⏰ *${formattedDate}* 까지 투표해주시면 감사하겠습니다.`;
 }
 
 // 메시지에 리액션 추가
