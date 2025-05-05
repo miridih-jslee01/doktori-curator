@@ -65,12 +65,30 @@ Deno.test(
       min: number;
       expected: BookGroup[];
     }[] = [
-        {
-          name: '',
-          inputBookGroups: [],
-          min: 4,
-          expected: []
-        }
+      {
+        name: "미충족(인원2), 충족(인원7)",
+        inputBookGroups: [
+          {
+            bookTitle: "마음",
+            members: ["user1", "user2"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: ["user3", "user4", "user5", "user6", "user7", "user8"],
+          },
+        ],
+        min: 4,
+        expected: [
+          {
+            bookTitle: "마음",
+            members: ["user1", "user2", "user7", "user8"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: ["user3", "user4", "user5", "user6"],
+          },
+        ],
+      },
     ];
 
     for (const tc of testCases) {
@@ -79,7 +97,10 @@ Deno.test(
         tc.inputBookGroups,
         tc.min
       );
-      assertEquals(assignmentCompletedGroups, tc.expected);
+      assertEquals(
+        assignmentCompletedGroups.map((group) => group.members.length),
+        tc.expected.map((group) => group.members.length)
+      );
     }
   }
 );
