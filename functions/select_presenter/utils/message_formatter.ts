@@ -12,5 +12,5 @@ import { PresenterResult } from "./presenter_service.ts";
 export function formatGroupResultMessage(result: PresenterResult): string {
   const { bookTitle, presenterId } = result;
 
-  return `📚 *${bookTitle} 발제자 선정 결과*\n<@${presenterId}>님이 발제자 겸 진행자로 선정되었습니다! 🎉`;
+  return `📚 *${bookTitle} 발제자 선정 결과*\n<@${presenterId}>님이 발제자로 선정되었습니다! 🎉`;
 }

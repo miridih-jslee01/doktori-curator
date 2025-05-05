@@ -4,7 +4,10 @@ import { SlackReaction } from "./utils/types.ts";
 import { filterBotUsersFromReactions } from "./utils/reaction_processor.ts";
 import { safeStringifyBookGroups } from "../_validators/book_group_validator.ts";
 import { processGroupsAndMessages } from "./utils/group_processor.ts";
-import { createSummaryMessage } from "./utils/message_formatter.ts";
+import {
+  createPresenterMessage,
+  createSummaryMessage,
+} from "./utils/message_formatter.ts";
 
 export const CheckPollResultFunction = DefineFunction({
   callback_id: "check_poll_result",
@@ -137,6 +140,12 @@ export default SlackFunction(
               bookTitle: group.bookTitle,
               members: group.members.join(","), // 멤버 ID 문자열로 변환
               thread_ts: messageResponse.ts, // 스레드 타임스탬프 저장
+            });
+            await client.chat.postMessage({
+              channel: inputs.channel_id,
+              thread_ts: messageResponse.ts,
+              text: createPresenterMessage(),
+              mrkdwn: true,
             });
           }
         } catch (error) {
