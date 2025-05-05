@@ -3,7 +3,10 @@ export type BookGroup = {
   members: string[];
 };
 
-export const reassignmentGroups = (bookGroup: BookGroup[], min?: number) => {
-  return bookGroup;
+export const reassignmentGroups = (bookGroups: BookGroup[], min?: number) => {
+  if (min) {
+    return bookGroups.filter((bookGroup) => bookGroup.members.length > min);
+  }
+  return bookGroups;
 };
 
