@@ -4,8 +4,37 @@ export type BookGroup = {
 };
 
 export const reassignmentGroups = (bookGroups: BookGroup[], min?: number) => {
-  if (min) {
-    return bookGroups.filter((bookGroup) => bookGroup.members.length >= min);
+  if (!min) {
+    return bookGroups;
   }
-  return bookGroups;
+
+  const sparePersonArray = bookGroups.map(
+    (group) => group.members.length - min,
+  );
+  const totalSparePerson = sparePersonArray.reduce((a, b) => a + b, 0);
+  const nextBookGroups = [...bookGroups];
+
+  const minBookGroupIdx = bookGroups.findIndex(
+    (group) =>
+      group.members.length ===
+        Math.min(...bookGroups.map((group) => group.members.length)),
+  );
+  const maxBookGroupIdx = bookGroups.findIndex(
+    (group) =>
+      group.members.length ===
+        Math.max(...bookGroups.map((group) => group.members.length)),
+  );
+
+  if (totalSparePerson >= 0) {
+    const sparePerson = nextBookGroups[maxBookGroupIdx].members.splice(
+      Math.floor(
+        Math.random() * nextBookGroups[maxBookGroupIdx].members.length,
+      ),
+      1,
+    )[0];
+    nextBookGroups[minBookGroupIdx].members.push(sparePerson);
+  }
+  console.log(nextBookGroups);
+
+  return nextBookGroups.filter((bookGroup) => bookGroup.members.length >= min);
 };
