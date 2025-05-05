@@ -2,6 +2,7 @@ import { Manifest } from "deno-slack-sdk/mod.ts";
 import { CreatePollFunction } from "./functions/create_poll/index.ts";
 import { CheckPollResultFunction } from "./functions/check_poll_result/index.ts";
 import { SelectPresenterFunction } from "./functions/select_presenter/index.ts";
+import { EncouragePollFunction } from "./functions/encourage_poll/index.ts";
 
 /**
  * 앱 매니페스트는 앱의 구성을 포함합니다.
@@ -17,11 +18,16 @@ export default Manifest({
     CreatePollFunction,
     CheckPollResultFunction,
     SelectPresenterFunction,
+    EncouragePollFunction,
   ],
   workflows: [],
   outgoingDomains: [],
   botScopes: [
     "commands",
+    "channels:read",
+    "groups:read",
+    "im:read",
+    "mpim:read",
     "chat:write",
     "chat:write.public",
     "reactions:write",
