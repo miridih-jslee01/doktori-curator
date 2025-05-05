@@ -14,10 +14,10 @@ Deno.test(
   "그룹 재배정 이후, 최소 인원을 충족하지 못한 그룹은 없어야 한다.",
   () => {
     const testCases: {
-      name: string,
-      inputBookGroups: BookGroup[],
-      min: number,
-      expected: BookGroup[]
+      name: string;
+      inputBookGroups: BookGroup[];
+      min: number;
+      expected: BookGroup[];
     }[] = [
       {
         name: "미충족 그룹1",
@@ -45,6 +45,34 @@ Deno.test(
         ],
       },
     ];
+    for (const tc of testCases) {
+      console.log(tc.name);
+      const assignmentCompletedGroups = reassignmentGroups(
+        tc.inputBookGroups,
+        tc.min
+      );
+      assertEquals(assignmentCompletedGroups, tc.expected);
+    }
+  }
+);
+
+Deno.test(
+  "그룹 재배정 이후, 미충족 그룹이 충족 그룹이 될만큼 충족 그룹들에 여유인원이 있다면, 미충족 그룹은 가능한한 충족 그룹이 되어야 한다.",
+  () => {
+    const testCases: {
+      name: string;
+      inputBookGroups: BookGroup[];
+      min: number;
+      expected: BookGroup[];
+    }[] = [
+        {
+          name: '',
+          inputBookGroups: [],
+          min: 4,
+          expected: []
+        }
+    ];
+
     for (const tc of testCases) {
       console.log(tc.name);
       const assignmentCompletedGroups = reassignmentGroups(
