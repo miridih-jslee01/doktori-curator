@@ -149,7 +149,10 @@ export default SlackFunction(
             await client.chat.postMessage({
               channel: inputs.channel_id,
               thread_ts: messageResponse.ts,
-              text: createPresenterMessage(inputs.deadline_days),
+              text: createPresenterMessage(
+                inputs.deadline_days,
+                group.bookTitle,
+              ),
               mrkdwn: true,
             });
           }
