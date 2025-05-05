@@ -15,7 +15,6 @@ export interface PresenterResult {
   thread_ts: string;
   presenterId: string;
   memberIds: string[];
-  selectionMethod: string;
 }
 
 export function selectPresenters(bookGroups: BookGroup[]): PresenterResult[] {
@@ -39,14 +38,12 @@ export function selectPresenters(bookGroups: BookGroup[]): PresenterResult[] {
 
     // 발제자 랜덤 선정 (모든 멤버 중에서)
     const presenterId = shuffle(memberIds)[0];
-    const selectionMethod = "랜덤으로";
 
     results.push({
       bookTitle,
       thread_ts,
       presenterId,
       memberIds,
-      selectionMethod,
     });
   }
 
