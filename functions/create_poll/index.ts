@@ -24,6 +24,11 @@ export const CreatePollFunction = DefineFunction({
         type: Schema.types.number,
         description: "그룹당 인원 제한 수",
       },
+      deadline_days: {
+        type: Schema.types.number,
+        description: "투표 마감까지 일수",
+        default: 1,
+      },
     },
     required: ["channel_id", "poll_items"],
   },
@@ -47,9 +52,10 @@ export default SlackFunction(
     const { items } = parsedItems;
 
     const personLimit = inputs.person_limit || 0;
+    const deadlineDays = inputs.deadline_days || 1;
 
     // 2) 메시지 텍스트 생성 (인원 제한 정보 포함)
-    const text = createPollMessageText(items, personLimit);
+    const text = createPollMessageText(items, personLimit, deadlineDays);
 
     // 3) 채널 ID 검증
     console.log(`채널 ID: ${inputs.channel_id}`);

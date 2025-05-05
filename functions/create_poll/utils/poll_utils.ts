@@ -1,6 +1,6 @@
 import { SlackAPIClient } from "deno-slack-sdk/types.ts";
 import { EMOJI_MAPPING } from "../../_utils/emoji_mapping.ts";
-import { getTomorrowFormattedDate } from "../../_utils/date_utils.ts";
+import { getFormattedDateAfterDays } from "../../_utils/date_utils.ts";
 
 // 투표 항목 파싱 및 검증
 export function parseAndValidatePollItems(
@@ -21,16 +21,24 @@ export function parseAndValidatePollItems(
   return { items };
 }
 
-// 투표 메시지 텍스트 생성
+/**
+ * 투표 메시지 텍스트를 생성합니다.
+ *
+ * @param items 투표 항목 배열
+ * @param personLimit 그룹당 인원 제한 수
+ * @param deadlineDays 투표 마감 기한 일수 (기본값: 1)
+ * @returns 포맷팅된 투표 메시지
+ */
 export function createPollMessageText(
   items: string[],
   personLimit: number = 0,
+  deadlineDays: number = 1,
 ): string {
   const itemsWithEmojis = items
     .map((item, idx) => `${EMOJI_MAPPING[idx].display}  ${item}`)
     .join("\n");
 
-  const formattedDate = getTomorrowFormattedDate();
+  const formattedDate = getFormattedDateAfterDays(deadlineDays);
 
   return `<!channel>\n${itemsWithEmojis}
     
