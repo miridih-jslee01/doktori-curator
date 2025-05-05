@@ -32,6 +32,11 @@ export const CheckPollResultFunction = DefineFunction({
         type: Schema.types.string,
         description: "원본 투표 항목들",
       },
+      deadline_days: {
+        type: Schema.types.number,
+        description: "발제자 응답 대기 일수",
+        default: 7,
+      },
     },
     required: ["channel_id", "message_ts", "person_limit", "poll_items"],
   },
@@ -144,7 +149,7 @@ export default SlackFunction(
             await client.chat.postMessage({
               channel: inputs.channel_id,
               thread_ts: messageResponse.ts,
-              text: createPresenterMessage(),
+              text: createPresenterMessage(inputs.deadline_days),
               mrkdwn: true,
             });
           }

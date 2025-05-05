@@ -23,9 +23,15 @@ export function createGroupStatusMessage(
   return `📚 *${group.bookTitle}* (${group.members.length}/${personLimit}명)\n${mentions}`;
 }
 
-export const createPresenterMessage = () => {
-  // 발제자 모집 마감일 설정 (일주일)
-  const deadline = getFormattedDateAfterDays(7);
+/**
+ * 발제자 모집 메시지를 생성합니다.
+ *
+ * @param deadlineDays 발제자 응답 대기 일수 (기본값: 7일)
+ * @returns 포맷팅된 메시지
+ */
+export const createPresenterMessage = (deadlineDays: number = 7): string => {
+  // 발제자 모집 마감일 설정
+  const deadline = getFormattedDateAfterDays(deadlineDays);
 
   return `1. 발제자를 희망하시는 분께서는 *${deadline}까지 이 메시지에* :o: 이모지를 남겨주세요!\n2. 미응답 시 그룹내에서 자동으로 랜덤 선정됩니다!`;
 };
