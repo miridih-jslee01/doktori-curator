@@ -3,6 +3,7 @@
  */
 import { SlackAPIClient } from "deno-slack-sdk/types.ts";
 import { chunkArray } from "../../_utils/arrays.ts";
+import { EMOJI_MAPPING } from "../../_utils/emoji_mapping.ts";
 
 // 슬랙 리액션 관련 인터페이스
 interface SlackReaction {
@@ -93,12 +94,12 @@ export async function filterBotUsersFromMembers(
 }
 
 /**
- * 투표 메시지에 리액션한 사용자 목록을 가져옵니다.
+ * 투표 메시지에 숫자 이모지로 리액션한 사용자 목록을 가져옵니다.
  *
  * @param client 슬랙 API 클라이언트
  * @param channelId 채널 ID
  * @param messageTs 메시지 타임스탬프
- * @returns 투표에 참여한 사용자 ID 배열
+ * @returns 숫자 이모지로 투표에 참여한 사용자 ID 배열
  */
 export async function getVotedUsers(
   client: SlackAPIClient,
@@ -117,10 +118,14 @@ export async function getVotedUsers(
     );
   }
 
-  // 모든 리액션에서 유저 ID 추출하고 중복 제거
+  // 숫자 이모지 리액션명 목록
+  const numberEmojiNames = EMOJI_MAPPING.map((emoji) => emoji.reaction);
+
+  // 숫자 이모지 리액션에서만 유저 ID 추출하고 중복 제거
   const votedUsers = new Set<string>();
   response.message.reactions.forEach((reaction: SlackReaction) => {
-    if (reaction.users) {
+    // 숫자 이모지인 경우에만 처리
+    if (reaction.users && numberEmojiNames.includes(reaction.name)) {
       reaction.users.forEach((userId: string) => votedUsers.add(userId));
     }
   });
