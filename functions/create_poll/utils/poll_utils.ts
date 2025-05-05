@@ -1,5 +1,6 @@
 import { SlackAPIClient } from "deno-slack-sdk/types.ts";
 import { EMOJI_MAPPING } from "../../_utils/emoji_mapping.ts";
+import { getTomorrowFormattedDate } from "../../_utils/date_utils.ts";
 
 // 투표 항목 파싱 및 검증
 export function parseAndValidatePollItems(
@@ -18,22 +19,6 @@ export function parseAndValidatePollItems(
   }
 
   return { items };
-}
-
-// 내일 현재 시간 계산하여 포맷팅
-export function getTomorrowFormattedDate(): string {
-  const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  return tomorrow.toLocaleString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
 }
 
 // 투표 메시지 텍스트 생성
