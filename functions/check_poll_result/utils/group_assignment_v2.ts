@@ -3,7 +3,7 @@ export type BookGroup = {
   members: string[];
 };
 
-export const reassignmentGroups = (bookGroup: BookGroup[]) => {
+export const reassignmentGroups = (bookGroup: BookGroup[], min?: number) => {
   return bookGroup;
 };
 
