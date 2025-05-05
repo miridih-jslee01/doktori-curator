@@ -140,7 +140,7 @@ export function createEncouragementMessage(
   const mentions = nonVoters.map((userId) => `<@${userId}>`).join(" ");
 
   return `
-아직 투표에 참여하지 않으신 분들 멘션 드립니다.
+아직 투표에 참여하지 않으신 분들 멘션 드립니다!
 ${mentions}
 `;
 }
