@@ -3,10 +3,7 @@
  * 메시지 포맷팅만 담당하고 API 호출은 수행하지 않습니다.
  */
 import { BookGroup } from "./types.ts";
-import {
-  getFormattedDateAfterDays,
-  getTomorrowFormattedDate,
-} from "../../_utils/date_utils.ts";
+import { getFormattedDateAfterDays } from "../../_utils/date_utils.ts";
 
 /**
  * 단일 그룹의 상태 메시지를 생성합니다.
