@@ -20,9 +20,13 @@ export const CreatePollFunction = DefineFunction({
         type: Schema.types.string,
         description: "줄바꿈(\\n)으로 구분된 도서 목록",
       },
-      person_limit: {
+      person_min_limit: {
         type: Schema.types.number,
-        description: "그룹당 인원 제한 수",
+        description: "그룹당 인원 최소 제한 수",
+      },
+      person_max_limit: {
+        type: Schema.types.number,
+        description: "그룹당 인원 최대 제한 수",
       },
       deadline_days: {
         type: Schema.types.number,
@@ -30,7 +34,12 @@ export const CreatePollFunction = DefineFunction({
         default: 1,
       },
     },
-    required: ["channel_id", "poll_items"],
+    required: [
+      "channel_id",
+      "poll_items",
+      "person_min_limit",
+      "person_max_limit",
+    ],
   },
   output_parameters: {
     properties: {
@@ -51,11 +60,17 @@ export default SlackFunction(
 
     const { items } = parsedItems;
 
-    const personLimit = inputs.person_limit || 0;
+    const personMaxLimit = inputs.person_max_limit || 0;
+    const personMinLimit = inputs.person_min_limit || 0;
     const deadlineDays = inputs.deadline_days || 1;
 
     // 2) 메시지 텍스트 생성 (인원 제한 정보 포함)
-    const text = createPollMessageText(items, personLimit, deadlineDays);
+    const text = createPollMessageText(
+      items,
+      personMaxLimit,
+      deadlineDays,
+      personMinLimit,
+    );
 
     // 3) 채널 ID 검증
     console.log(`채널 ID: ${inputs.channel_id}`);
