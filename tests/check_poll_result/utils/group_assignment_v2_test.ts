@@ -300,3 +300,54 @@ Deno.test(
     }
   }
 );
+
+Deno.test(
+  "인원제한을 초과한 그룹이 있다면, 가능한한 초과하지 않도록 다른 그룹으로 인원을 분배한다.",
+  () => {
+    const testCases: {
+      name: string;
+      inputBookGroups: BookGroup[];
+      min: number;
+      max: number;
+      expected: number[];
+    }[] = [
+      {
+        name: "충족(인원4), 충족(인원7)",
+        inputBookGroups: [
+          {
+            bookTitle: "마음",
+            members: ["user1", "user2", "user3", "user4"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: [
+              "user5",
+              "user6",
+              "user7",
+              "user8",
+              "user9",
+              "user10",
+              "user11",
+            ],
+          },
+        ],
+        min: 4,
+        max: 6,
+        expected: [5, 6],
+      },
+    ];
+
+    for (const tc of testCases) {
+      console.log(tc.name);
+      const assignmentCompletedGroups = reassignmentGroups(
+        tc.inputBookGroups,
+        tc.min,
+        tc.max
+      );
+      assertEquals(
+        assignmentCompletedGroups.map((group) => group.members.length),
+        tc.expected
+      );
+    }
+  }
+);
