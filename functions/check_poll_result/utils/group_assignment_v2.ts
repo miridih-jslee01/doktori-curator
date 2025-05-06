@@ -26,6 +26,29 @@ const getSecondLowestLengthElementIdx = <T>(
   );
 };
 
+const findMultipleIdxes = <T>(
+  array: T[],
+  isFindingEl: (el: T) => boolean,
+  foundIdxes?: number[],
+) => {
+  if (foundIdxes) {
+    const firstElementIdx = array.findIndex(
+      (el, idx) => !foundIdxes.includes(idx) && isFindingEl(el),
+    );
+    if (firstElementIdx === -1) {
+      return foundIdxes;
+    } else {
+      return findMultipleIdxes(array, isFindingEl, [
+        ...foundIdxes,
+        firstElementIdx,
+      ]);
+    }
+  } else {
+    const firstElementIdx = array.findIndex(isFindingEl);
+    return findMultipleIdxes(array, isFindingEl, [firstElementIdx]);
+  }
+};
+
 export const reassignmentGroups = (
   bookGroups: BookGroup[],
   min = 1,
@@ -51,9 +74,11 @@ export const reassignmentGroups = (
     return nextBookGroups;
   }
 
-  const minBookGroupIdx = bookGroups.findIndex(
+  const minBookGroupIdxes = findMultipleIdxes(
+    bookGroups,
     (group) => group.members.length === minBookGroupLength,
   );
+  const minBookGroupIdx = minBookGroupIdxes[getRandomIdx(minBookGroupIdxes)];
   const maxBookGroupIdx = bookGroups.findIndex(
     (group) => group.members.length === maxBookGroupLength,
   );
