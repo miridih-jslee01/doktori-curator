@@ -284,7 +284,29 @@ Deno.test(
         ],
         min: 4,
         expected: [4, 4],
-      },
+      },{
+        name: "충족(인원5), 충족(인원5), 미충족(인원1), 미충족(인원2)",
+        inputBookGroups: [
+          {
+            bookTitle: "마음",
+            members: ["user1", "user2", "user3", "user4", "user5"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: ["user6", "user7", "user8", "user9", "user10"],
+          },
+          {
+            bookTitle: "도둑맞은 집중력",
+            members: ["user11"],
+          },
+          {
+            bookTitle: "모든 계절이 유서였다",
+            members: ["user12", "user13"],
+          },
+        ],
+        min: 4,
+        expected: [5, 4, 4],
+      }
     ];
 
     for (const tc of testCases) {

@@ -79,9 +79,11 @@ export const reassignmentGroups = (
     (group) => group.members.length === minBookGroupLength,
   );
   const minBookGroupIdx = minBookGroupIdxes[getRandomIdx(minBookGroupIdxes)];
-  const maxBookGroupIdx = bookGroups.findIndex(
+  const maxBookGroupIdxes = findMultipleIdxes(
+    bookGroups,
     (group) => group.members.length === maxBookGroupLength,
   );
+  const maxBookGroupIdx = maxBookGroupIdxes[getRandomIdx(maxBookGroupIdxes)];
 
   if (totalSparePerson >= 0) {
     const sparePerson = pickRandomElement(
