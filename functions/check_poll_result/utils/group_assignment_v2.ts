@@ -7,7 +7,9 @@ export const reassignmentGroups = (bookGroups: BookGroup[], min?: number) => {
   if (!min) {
     return bookGroups;
   }
-
+  const bookGroupMembersLengths = bookGroups.map(
+    (group) => group.members.length,
+  );
   const sparePersonArray = bookGroups.map(
     (group) => group.members.length - min,
   );
@@ -15,14 +17,10 @@ export const reassignmentGroups = (bookGroups: BookGroup[], min?: number) => {
   const nextBookGroups = [...bookGroups];
 
   const minBookGroupIdx = bookGroups.findIndex(
-    (group) =>
-      group.members.length ===
-        Math.min(...bookGroups.map((group) => group.members.length)),
+    (group) => group.members.length === Math.min(...bookGroupMembersLengths),
   );
   const maxBookGroupIdx = bookGroups.findIndex(
-    (group) =>
-      group.members.length ===
-        Math.max(...bookGroups.map((group) => group.members.length)),
+    (group) => group.members.length === Math.max(...bookGroupMembersLengths),
   );
 
   if (totalSparePerson >= 0) {
