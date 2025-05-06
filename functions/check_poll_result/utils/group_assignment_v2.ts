@@ -72,28 +72,29 @@ export const reassignmentGroups = (
   }
   const nextBookGroups = [...bookGroups];
   /** <memberId, bookTitle[]> */
-  const memberMap = new Map<string, string[]>();
+  const memberBookSelections = new Map<string, string[]>();
+  /** <memberId, bookTitle>*/
+  const memberBookAssignment = new Map<string, string>();
+
   nextBookGroups.map((group) => {
     group.members.map((member) => {
-      const currentValue = memberMap.get(member);
-      memberMap.set(
+      const currentValue = memberBookSelections.get(member);
+      memberBookSelections.set(
         member,
         currentValue ? [...currentValue, group.bookTitle] : [group.bookTitle],
       );
     });
   });
-  /** <memberId, bookTitle>*/
-  const memberSet = new Map<string, string>();
-  memberMap.forEach((value, key) => {
+  memberBookSelections.forEach((value, key) => {
     const pickedElement = pickRandomElement(value);
     if (pickedElement) {
-      memberSet.set(key, pickedElement);
+      memberBookAssignment.set(key, pickedElement);
     }
   });
 
   nextBookGroups.forEach(
     (group) => (group.members = group.members.filter(
-      (member) => memberSet.get(member) === group.bookTitle,
+      (member) => memberBookAssignment.get(member) === group.bookTitle,
     )),
   );
 
