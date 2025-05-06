@@ -20,7 +20,8 @@ const getSecondLowestLengthElementIdx = <T>(
 
   const secondLowestLength = Math.min(...lengthArrayWithoutLowestLength);
 
-  return array.findIndex(
+  return findIndex(
+    array,
     (el, idx) =>
       idx !== lowestLengthElementIdx && getLength(el) === secondLowestLength,
   );
@@ -28,12 +29,12 @@ const getSecondLowestLengthElementIdx = <T>(
 
 const findMultipleIdxes = <T>(
   array: T[],
-  isFindingEl: (el: T) => boolean,
+  isFindingEl: (el: T, idx: number) => boolean,
   foundIdxes?: number[],
 ) => {
   if (foundIdxes) {
     const firstElementIdx = array.findIndex(
-      (el, idx) => !foundIdxes.includes(idx) && isFindingEl(el),
+      (el, idx) => !foundIdxes.includes(idx) && isFindingEl(el, idx),
     );
     if (firstElementIdx === -1) {
       return foundIdxes;
@@ -49,7 +50,10 @@ const findMultipleIdxes = <T>(
   }
 };
 
-const findIndex = <T>(array: T[], isFindingEl: (el: T) => boolean) => {
+const findIndex = <T>(
+  array: T[],
+  isFindingEl: (el: T, idx: number) => boolean,
+) => {
   const foundIdxes = findMultipleIdxes(array, isFindingEl);
   return foundIdxes[getRandomIdx(foundIdxes)];
 };
