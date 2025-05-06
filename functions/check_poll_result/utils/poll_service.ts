@@ -20,7 +20,8 @@ import { createGroupStatusMessage } from "./message_formatter.ts";
 export function processPollResult(
   reactions: SlackReaction[],
   bookTitles: string[],
-  personLimit: number,
+  personMaxLimit: number,
+  personMinLimit: number,
 ): { groups: BookGroup[]; messages: string[] } {
   // 1. 사용자 추출 (봇은 이미 필터링됨)
   const allUsers = extractUsersFromReactions(reactions, bookTitles);
@@ -33,15 +34,15 @@ export function processPollResult(
   const { bookGroups, unassignedUsers } = assignUsersToGroups(
     allUsers,
     bookTitles,
-    personLimit,
+    personMaxLimit,
   );
 
   // 3. 미할당 사용자 재배치
-  reassignUnassignedUsers(bookGroups, unassignedUsers, personLimit);
+  reassignUnassignedUsers(bookGroups, unassignedUsers, personMaxLimit);
 
   // 4. 그룹별 메시지 생성
   const messages = bookGroups.map((group) =>
-    createGroupStatusMessage(group, personLimit)
+    createGroupStatusMessage(group, personMaxLimit)
   );
 
   return {

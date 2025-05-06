@@ -99,6 +99,7 @@ export default SlackFunction(
         filteredReactions,
         bookTitles,
         inputs.person_max_limit,
+        inputs.person_min_limit,
       );
 
       // 결과가 없으면 오류 반환
