@@ -66,7 +66,7 @@ Deno.test(
       expected: number[];
     }[] = [
       {
-        name: "미충족(인원3), 충족(인원6)",
+        name: "미충족(인원3), 충족(인원5)",
         inputBookGroups: [
           {
             bookTitle: "마음",
@@ -75,6 +75,21 @@ Deno.test(
           {
             bookTitle: "에디토리얼 씽킹",
             members: ["user4", "user5", "user6", "user7", "user8"],
+          },
+        ],
+        min: 4,
+        expected: [4, 4],
+      },
+      {
+        name: "미충족(인원2), 충족(인원6)",
+        inputBookGroups: [
+          {
+            bookTitle: "마음",
+            members: ["user1", "user2"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: ["user3", "user4", "user5", "user6", "user7", "user8"],
           },
         ],
         min: 4,
