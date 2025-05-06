@@ -44,6 +44,9 @@ export const reassignmentGroups = (
     );
     nextBookGroups[minBookGroupIdx].members.push(sparePerson);
   } else {
+    if (nextBookGroups.length === 1) {
+      return nextBookGroups;
+    }
     const bookGroupsWithoutMinBookGroup = [...nextBookGroups];
     pick(bookGroupsWithoutMinBookGroup, minBookGroupIdx);
 
@@ -53,10 +56,6 @@ export const reassignmentGroups = (
     const secondMinBookGroupLength = Math.min(
       ...bookGroupMembersLengthsWithoutMinBookGroup,
     );
-
-    if (secondMinBookGroupLength >= min) {
-      return nextBookGroups.filter((group) => group.members.length >= min);
-    }
 
     const secondMinBookGroupIdx = nextBookGroups.findIndex(
       (group, idx) =>
@@ -70,5 +69,8 @@ export const reassignmentGroups = (
     nextBookGroups[secondMinBookGroupIdx].members.push(sparePerson);
   }
 
-  return reassignmentGroups(nextBookGroups, min);
+  return reassignmentGroups(
+    nextBookGroups.filter((group) => group.members.length > 0),
+    min,
+  );
 };
