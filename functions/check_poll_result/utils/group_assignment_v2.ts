@@ -7,7 +7,10 @@ const pick = <T>(array: T[], index: number) => array.splice(index, 1)[0];
 const getRandomIdx = (array: unknown[]): number =>
   Math.floor(Math.random() * array.length);
 
-export const reassignmentGroups = (bookGroups: BookGroup[], min?: number) => {
+export const reassignmentGroups = (
+  bookGroups: BookGroup[],
+  min?: number,
+): BookGroup[] => {
   if (!min) {
     return bookGroups;
   }
@@ -20,11 +23,18 @@ export const reassignmentGroups = (bookGroups: BookGroup[], min?: number) => {
   const totalSparePerson = sparePersonArray.reduce((a, b) => a + b, 0);
   const nextBookGroups = [...bookGroups];
 
+  const minBookGroupLength = Math.min(...bookGroupMembersLengths);
+  const maxBookGroupLength = Math.max(...bookGroupMembersLengths);
+
+  if (minBookGroupLength >= min) {
+    return nextBookGroups;
+  }
+
   const minBookGroupIdx = bookGroups.findIndex(
-    (group) => group.members.length === Math.min(...bookGroupMembersLengths),
+    (group) => group.members.length === minBookGroupLength,
   );
   const maxBookGroupIdx = bookGroups.findIndex(
-    (group) => group.members.length === Math.max(...bookGroupMembersLengths),
+    (group) => group.members.length === maxBookGroupLength,
   );
 
   if (totalSparePerson >= 0) {
@@ -33,6 +43,8 @@ export const reassignmentGroups = (bookGroups: BookGroup[], min?: number) => {
       getRandomIdx(nextBookGroups[maxBookGroupIdx].members),
     );
     nextBookGroups[minBookGroupIdx].members.push(sparePerson);
+
+    return reassignmentGroups(nextBookGroups, min);
   }
 
   return nextBookGroups.filter((bookGroup) => bookGroup.members.length >= min);
