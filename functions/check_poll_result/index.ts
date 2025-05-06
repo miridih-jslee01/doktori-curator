@@ -24,9 +24,13 @@ export const CheckPollResultFunction = DefineFunction({
         type: Schema.types.string,
         description: "투표 메시지의 타임스탬프",
       },
-      person_limit: {
+      person_min_limit: {
         type: Schema.types.number,
-        description: "그룹당 인원 제한 수",
+        description: "그룹당 최소 인원 제한 수",
+      },
+      person_max_limit: {
+        type: Schema.types.number,
+        description: "그룹당 최대 인원 제한 수",
       },
       poll_items: {
         type: Schema.types.string,
@@ -38,7 +42,13 @@ export const CheckPollResultFunction = DefineFunction({
         default: 7,
       },
     },
-    required: ["channel_id", "message_ts", "person_limit", "poll_items"],
+    required: [
+      "channel_id",
+      "message_ts",
+      "person_min_limit",
+      "person_max_limit",
+      "poll_items",
+    ],
   },
   output_parameters: {
     properties: {
@@ -88,7 +98,7 @@ export default SlackFunction(
       const { groups: bookGroups, messages } = processPollResult(
         filteredReactions,
         bookTitles,
-        inputs.person_limit,
+        inputs.person_max_limit,
       );
 
       // 결과가 없으면 오류 반환
@@ -99,11 +109,8 @@ export default SlackFunction(
       }
 
       // 4. 그룹과 메시지 처리 (필터링 및 정렬)
-      const {
-        sortedGroups,
-        sortedMessages,
-        totalParticipants,
-      } = processGroupsAndMessages(bookGroups, messages);
+      const { sortedGroups, sortedMessages, totalParticipants } =
+        processGroupsAndMessages(bookGroups, messages);
 
       // 5. 요약 메시지 생성 및 전송
       const summaryText = createSummaryMessage(
