@@ -95,6 +95,57 @@ Deno.test(
         min: 4,
         expected: [4, 4],
       },
+      {
+        name: "미충족(인원1), 충족(인원7)",
+        inputBookGroups: [
+          {
+            bookTitle: "마음",
+            members: ["user1"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: [
+              "user2",
+              "user3",
+              "user4",
+              "user5",
+              "user6",
+              "user7",
+              "user8",
+            ],
+          },
+        ],
+        min: 4,
+        expected: [4, 4],
+      },
+      {
+        name: "미충족(인원1), 충족(인원8), 미충족(인원3)",
+        inputBookGroups: [
+          {
+            bookTitle: "마음",
+            members: ["user1"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: [
+              "user2",
+              "user3",
+              "user4",
+              "user5",
+              "user6",
+              "user7",
+              "user8",
+              "user9",
+            ],
+          },
+          {
+            bookTitle: "도둑맞은 집중력",
+            members: ["user10", "user11", "user12"],
+          },
+        ],
+        min: 4,
+        expected: [4, 4, 4],
+      },
     ];
 
     for (const tc of testCases) {
