@@ -39,6 +39,17 @@ Deno.test(
         min: 4,
         expected: [7],
       },
+      {
+          name: '미충족 그룹3, 충족 그룹1',
+        inputBookGroups: [
+          { bookTitle: "asfsfa", members: [] },
+          { bookTitle: "xzczxc", members: ["U03M9L667KR"] },
+          { bookTitle: "sadasda", members: [] },
+          { bookTitle: "zxcxzczxc", members: [] },
+        ],
+          min: 4,
+          expected: [1]
+      },
     ];
     for (const tc of testCases) {
       console.log(tc.name);
