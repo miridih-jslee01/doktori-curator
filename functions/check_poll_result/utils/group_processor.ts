@@ -1,7 +1,8 @@
 /**
  * 그룹 처리 및 정렬을 담당하는 유틸리티 모듈
  */
-import { BookGroup } from "./types.ts";
+
+import { BookGroup } from "./group_assignment_v2.ts";
 
 /**
  * 처리된 그룹 정보와 메시지
@@ -26,17 +27,6 @@ export function processGroupsAndMessages(
   // 멤버가 있는 그룹만 필터링
   const filledGroups = bookGroups.filter((group) => group.members.length > 0);
 
-  // 책 인덱스 순서대로 정렬
-  filledGroups.sort((a, b) => a.bookIndex - b.bookIndex);
-
-  // 정렬된 그룹에 맞춰 메시지도 정렬
-  const sortedMessages = filledGroups.map((group) => {
-    const originalIndex = bookGroups.findIndex(
-      (originalGroup) => originalGroup.bookIndex === group.bookIndex,
-    );
-    return messages[originalIndex];
-  });
-
   // 총 참여 인원수 계산
   const totalParticipants = filledGroups.reduce(
     (sum, group) => sum + group.members.length,
@@ -45,7 +35,7 @@ export function processGroupsAndMessages(
 
   return {
     sortedGroups: filledGroups,
-    sortedMessages,
+    sortedMessages: messages,
     totalParticipants,
   };
 }
