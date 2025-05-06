@@ -49,6 +49,11 @@ const findMultipleIdxes = <T>(
   }
 };
 
+const findIndex = <T>(array: T[], isFindingEl: (el: T) => boolean) => {
+  const foundIdxes = findMultipleIdxes(array, isFindingEl);
+  return foundIdxes[getRandomIdx(foundIdxes)];
+};
+
 export const reassignmentGroups = (
   bookGroups: BookGroup[],
   min = 1,
@@ -74,16 +79,14 @@ export const reassignmentGroups = (
     return nextBookGroups;
   }
 
-  const minBookGroupIdxes = findMultipleIdxes(
+  const minBookGroupIdx = findIndex(
     bookGroups,
     (group) => group.members.length === minBookGroupLength,
   );
-  const minBookGroupIdx = minBookGroupIdxes[getRandomIdx(minBookGroupIdxes)];
-  const maxBookGroupIdxes = findMultipleIdxes(
+  const maxBookGroupIdx = findIndex(
     bookGroups,
     (group) => group.members.length === maxBookGroupLength,
   );
-  const maxBookGroupIdx = maxBookGroupIdxes[getRandomIdx(maxBookGroupIdxes)];
 
   if (totalSparePerson >= 0) {
     const sparePerson = pickRandomElement(
