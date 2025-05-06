@@ -65,7 +65,6 @@ const findIndex = <T>(
 type MemberBookSelections = Map<string, string[]>;
 
 const getMemberBookSelections = (bookGroups: BookGroup[]) => {
-  /** <memberId, bookTitle[]> */
   const memberBookSelections: MemberBookSelections = new Map();
 
   bookGroups.forEach((group) => {
@@ -98,6 +97,17 @@ const getMemberBookAssignment = (
   return memberBookAssignment;
 };
 
+const initializeBookGroupsMembers = (bookGroups: BookGroup[]) => {
+  const memberBookSelections = getMemberBookSelections(bookGroups);
+  const memberBookAssignment = getMemberBookAssignment(memberBookSelections);
+
+  bookGroups.forEach(
+    (group) => (group.members = group.members.filter(
+      (member) => memberBookAssignment.get(member) === group.bookTitle,
+    )),
+  );
+};
+
 export const reassignmentGroups = (
   bookGroups: BookGroup[],
   min = 1,
@@ -107,14 +117,7 @@ export const reassignmentGroups = (
     return bookGroups;
   }
   const nextBookGroups = [...bookGroups];
-  const memberBookSelections = getMemberBookSelections(nextBookGroups);
-  const memberBookAssignment = getMemberBookAssignment(memberBookSelections);
-
-  nextBookGroups.forEach(
-    (group) => (group.members = group.members.filter(
-      (member) => memberBookAssignment.get(member) === group.bookTitle,
-    )),
-  );
+  initializeBookGroupsMembers(nextBookGroups);
 
   const bookGroupMembersLengths = nextBookGroups.map(
     (group) => group.members.length,
