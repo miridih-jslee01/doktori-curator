@@ -480,10 +480,29 @@ Deno.test("한 유저가 여러 권에 투표했다면, 한권만 선택된다."
       max: 6,
       expected: [1],
     },
+    {
+      inputBookGroups: [
+        {
+          bookTitle: "마음",
+          members: ["user1", "user2", "user3", "user4"],
+        },
+        {
+          bookTitle: "에디토리얼 씽킹",
+          members: ["user1"],
+        },
+        {
+          bookTitle: "도둑맞은 집중력",
+          members: ["user1"],
+        },
+      ],
+      min: 4,
+      max: 6,
+      expected: [4],
+    },
   ];
 
   for (const tc of testCases) {
-    console.log(tc.name);
+    tc.name && console.log(tc.name);
     const assignmentCompletedGroups = reassignmentGroups(
       tc.inputBookGroups,
       tc.min,
@@ -495,3 +514,51 @@ Deno.test("한 유저가 여러 권에 투표했다면, 한권만 선택된다."
     );
   }
 });
+
+Deno.test(
+  "한 유저가 여러 권에 투표했지만, 특정 그룹에서 다른 그룹으로 이동시 해당 그룹이 미충족 그룹이 될 경우, 그룹 이동을 하지 않는다.",
+  () => {
+    const testCases: {
+      name?: string;
+      inputBookGroups: BookGroup[];
+      min: number;
+      expected: BookGroup[];
+    }[] = [
+      {
+        inputBookGroups: [
+          {
+            bookTitle: "마음",
+            members: ["user1", "user2", "user3", "user4"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: ["user1"],
+          },
+          {
+            bookTitle: "도둑맞은 집중력",
+            members: ["user1"],
+          },
+        ],
+        min: 4,
+        expected: [
+          {
+            bookTitle: "마음",
+            members: ["user1", "user2", "user3", "user4"],
+          },
+        ],
+      },
+    ];
+
+    for (const tc of testCases) {
+      tc.name && console.log(tc.name);
+      const assignmentCompletedGroups = reassignmentGroups(
+        tc.inputBookGroups,
+        tc.min,
+      );
+      assertEquals(
+        assignmentCompletedGroups,
+        tc.expected
+      );
+    }
+  }
+);

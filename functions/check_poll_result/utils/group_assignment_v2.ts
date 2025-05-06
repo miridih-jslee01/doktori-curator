@@ -84,14 +84,29 @@ const getMemberBookSelections = (bookGroups: BookGroup[]) => {
 };
 
 const getMemberBookAssignment = (
+  bookGroups: BookGroup[],
   memberBookSelections: MemberBookSelections,
+  min: number,
 ) => {
   const memberBookAssignment: MemberBookAssignment = new Map<string, string>();
 
-  memberBookSelections.forEach((value, key) => {
-    const pickedElement = pickRandomElement(value);
-    if (pickedElement) {
-      memberBookAssignment.set(key, pickedElement);
+  memberBookSelections.forEach((bookSelection, key) => {
+    if (bookSelection.length === 1) {
+      memberBookAssignment.set(key, bookSelection[0]);
+    } else {
+      const bookGroup = bookGroups.find((group) =>
+        bookSelection.includes(group.bookTitle)
+      );
+      if (bookGroup && bookGroup.members.length - 1 >= min) {
+        const pickedElement = pickRandomElement(bookSelection);
+        if (pickedElement) {
+          memberBookAssignment.set(key, pickedElement);
+        }
+      } else {
+        if (bookGroup) {
+          memberBookAssignment.set(key, bookGroup.bookTitle);
+        }
+      }
     }
   });
 
@@ -119,7 +134,11 @@ export const reassignmentGroups = (
   }
   const nextBookGroups = [...bookGroups];
   const memberBookSelections = getMemberBookSelections(bookGroups);
-  const memberBookAssignment = getMemberBookAssignment(memberBookSelections);
+  const memberBookAssignment = getMemberBookAssignment(
+    bookGroups,
+    memberBookSelections,
+    min,
+  );
   initializeBookGroupsMembers(nextBookGroups, memberBookAssignment);
 
   const bookGroupMembersLengths = nextBookGroups.map(
