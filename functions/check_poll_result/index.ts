@@ -4,6 +4,7 @@ import { SlackReaction } from "./utils/types.ts";
 import { filterBotUsersFromReactions } from "./utils/reaction_processor.ts";
 import { safeStringifyBookGroups } from "../_validators/book_group_validator.ts";
 import { processGroupsAndMessages } from "./utils/group_processor.ts";
+import { BookGroup } from "../_types/book_group.ts";
 import {
   createPresenterMessage,
   createSummaryMessage,
@@ -126,7 +127,7 @@ export default SlackFunction(
       });
 
       // 6. 각 그룹별 메시지 전송 및 그룹 정보 수집
-      const groupsInfo = [];
+      const groupsInfo: BookGroup[] = [];
 
       // 각 그룹의 결과를 채널에 직접 전송
       for (let i = 0; i < sortedGroups.length; i++) {
@@ -154,7 +155,7 @@ export default SlackFunction(
               members: group.members.join(","), // 멤버 ID 문자열로 변환
               thread_ts: messageResponse.ts, // 스레드 타임스탬프 저장
             });
-            await client.chat.postMessage({
+            const presenterMessageResponse = await client.chat.postMessage({
               channel: inputs.channel_id,
               thread_ts: messageResponse.ts,
               text: createPresenterMessage(
@@ -163,6 +164,13 @@ export default SlackFunction(
               ),
               mrkdwn: true,
             });
+
+            // 발제자 모집 메시지 타임스탬프 저장
+            if (presenterMessageResponse.ok && presenterMessageResponse.ts) {
+              // 방금 추가한 그룹 정보에 presenter_message_ts 추가
+              groupsInfo[groupsInfo.length - 1].presenter_message_ts =
+                presenterMessageResponse.ts;
+            }
           }
         } catch (error) {
           console.error(`그룹 메시지 전송 중 오류: ${error}`);

@@ -38,7 +38,7 @@ export const createPresenterMessage = (
 
   return `📝 *${bookTitle} 발제자 안내*
 • ${bookTitle} 발제를 희망하시는 분은 *${deadline}까지 이 메시지에* :o: 이모지를 남겨주세요.
-• 응답이 없을 경우에는 그룹 내에서 랜덤으로 선정될 예정입니다.`;
+• 응답이 없을 경우에는 그룹 내에서 랜덤으로 선정됩니다!`;
 };
 
 /**

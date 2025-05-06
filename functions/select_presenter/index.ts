@@ -1,7 +1,17 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { safeParseBookGroups } from "../_validators/book_group_validator.ts";
-import { selectPresenters } from "./utils/presenter_service.ts";
+import {
+  MessageReactions,
+  selectPresenters,
+} from "./utils/presenter_service.ts";
 import { formatGroupResultMessage } from "./utils/message_formatter.ts";
+
+// Slack 리액션 타입 정의
+interface SlackReaction {
+  name: string;
+  users: string[];
+  count: number;
+}
 
 export const SelectPresenterFunction = DefineFunction({
   callback_id: "select_presenter",
@@ -50,12 +60,49 @@ export default SlackFunction(
         };
       }
 
-      // 2. 발제자 선정 (비즈니스 로직 분리)
-      const presenterResults = selectPresenters(bookGroups);
+      // 2. 각 발제자 모집 메시지에 대한 리액션 정보 수집
+      const messageReactions: MessageReactions = {};
 
-      // 3. 결과 메시지 생성 및 전송
+      // 발제자 메시지 타임스탬프가 있는 그룹만 처리
+      const presenterMessagePromises = bookGroups
+        .filter((group) => group.presenter_message_ts)
+        .map(async (group) => {
+          if (!group.presenter_message_ts) return; // TypeScript를 위한 타입 가드
+
+          try {
+            // 메시지의 리액션 정보 가져오기
+            const reactionsResponse = await client.reactions.get({
+              channel: inputs.channel_id,
+              timestamp: group.presenter_message_ts,
+              full: true,
+            });
+
+            if (reactionsResponse.ok && reactionsResponse.message?.reactions) {
+              // 'o' 리액션이 있는지 확인
+              const oReaction = reactionsResponse.message.reactions.find(
+                (reaction: SlackReaction) => reaction.name === "o",
+              );
+
+              if (oReaction && oReaction.users) {
+                // 'o' 리액션을 한 사용자 목록 저장
+                messageReactions[group.presenter_message_ts] = oReaction.users;
+              }
+            }
+          } catch (error) {
+            console.error(`리액션 정보 가져오기 실패: ${error}`);
+            // 오류가 발생해도 다른 그룹 처리 계속
+          }
+        });
+
+      // 모든 리액션 정보 가져오기 완료 대기
+      await Promise.all(presenterMessagePromises);
+
+      // 3. 발제자 선정 (비즈니스 로직 분리) - 리액션 정보 전달
+      const presenterResults = selectPresenters(bookGroups, messageReactions);
+
+      // 4. 결과 메시지 생성 및 전송
       const messagePromises = presenterResults.map((result) => {
-        const message = formatGroupResultMessage(result);
+        const message = formatGroupResultMessage(result, result.isVolunteer);
 
         return client.chat.postMessage({
           channel: inputs.channel_id,
@@ -65,10 +112,10 @@ export default SlackFunction(
         });
       });
 
-      // 4. 모든 메시지 전송을 병렬로 처리
+      // 5. 모든 메시지 전송을 병렬로 처리
       await Promise.all(messagePromises);
 
-      // 5. 결과 반환
+      // 6. 결과 반환
       return {
         outputs: {},
       };

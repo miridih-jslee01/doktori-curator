@@ -9,4 +9,5 @@ export interface BookGroup {
   bookTitle: string; // 책 제목
   members: string; // 쉼표로 구분된 멤버 ID 목록
   thread_ts: string; // 스레드 타임스탬프
+  presenter_message_ts?: string; // 발제자 모집 메시지 타임스탬프
 }
