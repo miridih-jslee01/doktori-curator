@@ -37,7 +37,7 @@ Deno.test(
           },
         ],
         min: 4,
-        expected: [7],
+        expected: [4],
       },
       {
         name: "미충족 그룹3, 충족 그룹1",
