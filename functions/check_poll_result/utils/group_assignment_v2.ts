@@ -62,6 +62,25 @@ const findIndex = <T>(
   return foundIdxes[getRandomIdx(foundIdxes)];
 };
 
+const getMemberBookSelections = (bookGroups: BookGroup[]) => {
+  /** <memberId, bookTitle[]> */
+  const memberBookSelections = new Map<string, string[]>();
+
+  bookGroups.forEach((group) => {
+    group.members.forEach((member) => {
+      const currentBookSelections = memberBookSelections.get(member);
+      memberBookSelections.set(
+        member,
+        currentBookSelections
+          ? [...currentBookSelections, group.bookTitle]
+          : [group.bookTitle],
+      );
+    });
+  });
+
+  return memberBookSelections;
+};
+
 export const reassignmentGroups = (
   bookGroups: BookGroup[],
   min = 1,
@@ -71,20 +90,10 @@ export const reassignmentGroups = (
     return bookGroups;
   }
   const nextBookGroups = [...bookGroups];
-  /** <memberId, bookTitle[]> */
-  const memberBookSelections = new Map<string, string[]>();
+  const memberBookSelections = getMemberBookSelections(nextBookGroups);
   /** <memberId, bookTitle>*/
   const memberBookAssignment = new Map<string, string>();
 
-  nextBookGroups.map((group) => {
-    group.members.map((member) => {
-      const currentValue = memberBookSelections.get(member);
-      memberBookSelections.set(
-        member,
-        currentValue ? [...currentValue, group.bookTitle] : [group.bookTitle],
-      );
-    });
-  });
   memberBookSelections.forEach((value, key) => {
     const pickedElement = pickRandomElement(value);
     if (pickedElement) {
