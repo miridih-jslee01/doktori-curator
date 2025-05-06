@@ -2,6 +2,8 @@
  * 투표 결과 확인 도메인의 타입 정의
  */
 
+import { BookGroup } from "./group_assignment_v2.ts";
+
 /**
  * Slack API 응답에서 사용하는 리액션 객체 타입
  */
@@ -21,19 +23,8 @@ export interface ReactionUser {
 }
 
 /**
- * 책 그룹 정보
- */
-export interface BookGroup {
-  bookIndex: number; // 책 인덱스
-  bookTitle: string; // 책 제목
-  members: string[]; // 멤버 ID 목록
-  isFull: boolean; // 인원제한 충족 여부
-}
-
-/**
  * 그룹 할당 결과
  */
 export interface GroupAssignmentResult {
   bookGroups: BookGroup[];
-  unassignedUsers: ReactionUser[];
 }

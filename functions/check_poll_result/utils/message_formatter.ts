@@ -2,7 +2,7 @@
  * 그룹 관련 메시지 포맷팅을 담당하는 모듈
  * 메시지 포맷팅만 담당하고 API 호출은 수행하지 않습니다.
  */
-import { BookGroup } from "./types.ts";
+import { BookGroup } from "./group_assignment_v2.ts";
 import { getFormattedDateAfterDays } from "../../_utils/date_utils.ts";
 
 /**

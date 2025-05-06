@@ -1,13 +1,11 @@
 /**
  * 투표 결과 처리의 메인 로직을 담당하는 모듈
  */
-import { BookGroup, SlackReaction } from "./types.ts";
+import { SlackReaction } from "./types.ts";
 import { extractUsersFromReactions } from "./reaction_processor.ts";
-import {
-  assignUsersToGroups,
-  reassignUnassignedUsers,
-} from "./group_assignment.ts";
+import { assignUsersToGroups } from "./group_assignment.ts";
 import { createGroupStatusMessage } from "./message_formatter.ts";
+import { BookGroup } from "./group_assignment_v2.ts";
 
 /**
  * 투표 결과를 처리하여 그룹을 구성하고 메시지를 생성합니다.
@@ -31,14 +29,12 @@ export function processPollResult(
   }
 
   // 2. 그룹 할당
-  const { bookGroups, unassignedUsers } = assignUsersToGroups(
+  const { bookGroups } = assignUsersToGroups(
     allUsers,
     bookTitles,
     personMaxLimit,
+    personMinLimit,
   );
-
-  // 3. 미할당 사용자 재배치
-  reassignUnassignedUsers(bookGroups, unassignedUsers, personMaxLimit);
 
   // 4. 그룹별 메시지 생성
   const messages = bookGroups.map((group) =>
