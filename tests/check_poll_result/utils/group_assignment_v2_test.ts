@@ -161,3 +161,61 @@ Deno.test(
     }
   }
 );
+
+Deno.test(
+  "그룹 재배정 이후, 미충족 그룹이 충족 그룹이 될만큼 충족 그룹들에 여유인원이 없다면, 미충족 그룹은 가장 적은 인원의 그룹부터 통폐합되어야 한다.",
+  () => {
+    const testCases: {
+      name: string;
+      inputBookGroups: BookGroup[];
+      min: number;
+      expected: number[];
+    }[] = [
+      {
+        name: "미충족(인원1), 충족(인원5)",
+        inputBookGroups: [
+          {
+            bookTitle: "마음",
+            members: ["user1"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: ["user2", "user3", "user4", "user5", "user6"],
+          },
+        ],
+        min: 4,
+        expected: [5],
+      },{
+        name: "미충족(인원1), 충족(인원4), 미충족(인원3)",
+        inputBookGroups: [
+          {
+            bookTitle: "마음",
+            members: ["user1"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: ["user2", "user3", "user4", "user5"],
+          },
+          {
+            bookTitle: "도둑맞은 집중력",
+            members: ["user6", "user7", "user8"],
+          },
+        ],
+        min: 4,
+        expected: [5, 4],
+      }
+    ];
+
+    for (const tc of testCases) {
+      console.log(tc.name);
+      const assignmentCompletedGroups = reassignmentGroups(
+        tc.inputBookGroups,
+        tc.min
+      );
+      assertEquals(
+        assignmentCompletedGroups.map((group) => group.members.length),
+        tc.expected
+      );
+    }
+  }
+);
