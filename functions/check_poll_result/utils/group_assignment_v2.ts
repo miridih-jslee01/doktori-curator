@@ -3,7 +3,7 @@ export type BookGroup = {
   members: string[];
 };
 
-const pick = (array: string[], index: number) => array.splice(index, 1)[0];
+const pick = <T>(array: T[], index: number) => array.splice(index, 1)[0];
 const getRandomIdx = (array: unknown[]): number =>
   Math.floor(Math.random() * array.length);
 
