@@ -62,6 +62,31 @@ const findIndex = <T>(
   return foundIdxes[getRandomIdx(foundIdxes)];
 };
 
+const findMultipleElements = <T>(
+  array: T[],
+  isFindingEl: (el: T, idx: number) => boolean,
+  foundElements?: T[],
+) => {
+  const nextArray = [...array];
+  const firstElementIdx = nextArray.findIndex(isFindingEl);
+  if (firstElementIdx === -1) {
+    return foundElements;
+  }
+  const firstElement = pick(nextArray, firstElementIdx);
+  if (firstElement) {
+    if (foundElements) {
+      return findMultipleElements(nextArray, isFindingEl, [
+        ...foundElements,
+        firstElement,
+      ]);
+    } else {
+      return findMultipleElements(nextArray, isFindingEl, [firstElement]);
+    }
+  } else {
+    return foundElements;
+  }
+};
+
 type MemberBookSelections = Map<string, string[]>;
 type MemberBookAssignment = Map<string, string>;
 
@@ -94,18 +119,16 @@ const getMemberBookAssignment = (
     if (bookSelection.length === 1) {
       memberBookAssignment.set(key, bookSelection[0]);
     } else {
-      const bookGroup = bookGroups.find((group) =>
-        bookSelection.includes(group.bookTitle)
+      const bookGroupArray = findMultipleElements(
+        bookGroups,
+        (group) => bookSelection.includes(group.bookTitle),
       );
-      if (bookGroup && bookGroup.members.length - 1 >= min) {
-        const pickedElement = pickRandomElement(bookSelection);
-        if (pickedElement) {
-          memberBookAssignment.set(key, pickedElement);
-        }
-      } else {
-        if (bookGroup) {
-          memberBookAssignment.set(key, bookGroup.bookTitle);
-        }
+      if (bookGroupArray) {
+        const bookGroup = bookGroupArray.find((group) =>
+          group.members.length >= min
+        ) ??
+          bookGroupArray[getRandomIdx(bookGroupArray)];
+        memberBookAssignment.set(key, bookGroup.bookTitle);
       }
     }
   });

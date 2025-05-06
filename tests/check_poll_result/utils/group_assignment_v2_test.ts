@@ -522,7 +522,7 @@ Deno.test(
       name?: string;
       inputBookGroups: BookGroup[];
       min: number;
-      expected: BookGroup[];
+      expected: BookGroup[][];
     }[] = [
       {
         inputBookGroups: [
@@ -541,10 +541,50 @@ Deno.test(
         ],
         min: 4,
         expected: [
+          [
+            {
+              bookTitle: "마음",
+              members: ["user1", "user2", "user3", "user4"],
+            },
+          ],
+        ],
+      },
+      {
+        name: '미충족 그룹 여부 조건이 동일하다면, 랜덤으로 그룹을 결정한다.',
+        inputBookGroups: [
           {
             bookTitle: "마음",
-            members: ["user1", "user2", "user3", "user4"],
+            members: ["user1"],
           },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: ["user1"],
+          },
+          {
+            bookTitle: "도둑맞은 집중력",
+            members: ["user1"],
+          },
+        ],
+        min: 4,
+        expected: [
+          [
+            {
+              bookTitle: "마음",
+              members: ["user1"],
+            },
+          ],
+          [
+            {
+              bookTitle: "에디토리얼 씽킹",
+              members: ["user1"],
+            },
+          ],
+          [
+            {
+              bookTitle: "도둑맞은 집중력",
+              members: ["user1"],
+            },
+          ],
         ],
       },
     ];
@@ -553,12 +593,9 @@ Deno.test(
       tc.name && console.log(tc.name);
       const assignmentCompletedGroups = reassignmentGroups(
         tc.inputBookGroups,
-        tc.min,
+        tc.min
       );
-      assertEquals(
-        assignmentCompletedGroups,
-        tc.expected
-      );
+      recursiveAssertEquals(assignmentCompletedGroups, tc.expected);
     }
   }
 );
