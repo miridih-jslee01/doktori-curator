@@ -46,7 +46,7 @@ export const reassignmentGroups = (
   const minBookGroupLength = Math.min(...bookGroupMembersLengths);
   const maxBookGroupLength = Math.max(...bookGroupMembersLengths);
 
-  if (minBookGroupLength >= min) {
+  if (minBookGroupLength >= min && !(max && maxBookGroupLength > max)) {
     return nextBookGroups;
   }
 
