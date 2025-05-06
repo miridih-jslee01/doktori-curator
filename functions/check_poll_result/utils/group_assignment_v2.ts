@@ -12,7 +12,7 @@ export const reassignmentGroups = (
   bookGroups: BookGroup[],
   min?: number,
 ): BookGroup[] => {
-  if (!min) {
+  if (!min || bookGroups.length === 1) {
     return bookGroups;
   }
   const bookGroupMembersLengths = bookGroups.map(
@@ -44,9 +44,6 @@ export const reassignmentGroups = (
     );
     nextBookGroups[minBookGroupIdx].members.push(sparePerson);
   } else {
-    if (nextBookGroups.length === 1) {
-      return nextBookGroups;
-    }
     const bookGroupsWithoutMinBookGroup = [...nextBookGroups];
     pick(bookGroupsWithoutMinBookGroup, minBookGroupIdx);
 
