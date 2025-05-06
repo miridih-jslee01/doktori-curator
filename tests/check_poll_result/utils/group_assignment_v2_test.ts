@@ -499,6 +499,25 @@ Deno.test("한 유저가 여러 권에 투표했다면, 한권만 선택된다."
       max: 6,
       expected: [4],
     },
+    {
+      inputBookGroups: [
+        {
+          bookTitle: "마음",
+          members: ["user1", "user2", "user3", "user4"],
+        },
+        {
+          bookTitle: "에디토리얼 씽킹",
+          members: ["user1", "user2", "user3", "user4"],
+        },
+        {
+          bookTitle: "도둑맞은 집중력",
+          members: ["user1", "user2", "user3", "user4"],
+        },
+      ],
+      min: 4,
+      max: 6,
+      expected: [4],
+    },
   ];
 
   for (const tc of testCases) {
@@ -550,7 +569,7 @@ Deno.test(
         ],
       },
       {
-        name: '미충족 그룹 여부 조건이 동일하다면, 랜덤으로 그룹을 결정한다.',
+        name: "미충족 그룹 여부 조건이 동일하다면, 랜덤으로 그룹을 결정한다.",
         inputBookGroups: [
           {
             bookTitle: "마음",

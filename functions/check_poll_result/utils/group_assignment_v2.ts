@@ -124,10 +124,13 @@ const getMemberBookAssignment = (
         (group) => bookSelection.includes(group.bookTitle),
       );
       if (bookGroupArray) {
-        const bookGroup = bookGroupArray.find((group) =>
-          group.members.length >= min
-        ) ??
-          bookGroupArray[getRandomIdx(bookGroupArray)];
+        const filteredBookGroupArray = findMultipleElements(
+          bookGroupArray,
+          (group) => group.members.length >= min,
+        );
+        const bookGroup = filteredBookGroupArray
+          ? filteredBookGroupArray[getRandomIdx(filteredBookGroupArray)]
+          : bookGroupArray[getRandomIdx(bookGroupArray)];
         memberBookAssignment.set(key, bookGroup.bookTitle);
       }
     }
