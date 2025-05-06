@@ -31,8 +31,9 @@ export function parseAndValidatePollItems(
  */
 export function createPollMessageText(
   items: string[],
-  personLimit: number = 0,
+  personMaxLimit: number = 0,
   deadlineDays: number = 1,
+  personMinLimit: number = 0,
 ): string {
   const itemsWithEmojis = items
     .map((item, idx) => `${EMOJI_MAPPING[idx].display}  ${item}`)
@@ -48,8 +49,9 @@ ${itemsWithEmojis}
 
 📌 *투표 안내* 
 1. 읽고 싶은 책의 숫자 *이모지를 눌러* 마음을 표현해주세요.
-2. 각 책 그룹은 *${personLimit}명* 까지 함께합니다.
-   • 인원 초과 그룹은 투표 마감 시 시스템이 자동으로 다른 그룹에 배정해 드립니다.
+   • 여러 책을 선택하시더라도, 투표마감시 자동으로 한권으로 집계됩니다.
+2. 각 책 그룹은 *${personMinLimit}명* 부터 *${personMaxLimit}명* 까지 함께합니다.
+   • 인원 미달, 초과 그룹은 투표 마감 시 시스템이 자동으로 다른 그룹에 배정해 드립니다.
    • 그룹이 다르더라도 회원들끼리 책을 빌려 읽을 수 있습니다. 
 3. ⏰ *${formattedDate}* 까지 투표해주시면 감사하겠습니다.`;
 }
