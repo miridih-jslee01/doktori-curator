@@ -319,7 +319,7 @@ Deno.test(
         tc.inputBookGroups,
         tc.min
       );
-      recursiveAssert(
+      recursiveAssertEquals(
         assignmentCompletedGroups.map((group) => group.members.length),
         tc.expected
       );
@@ -327,11 +327,11 @@ Deno.test(
   }
 );
 
-const recursiveAssert = <T>(inputs: T[], testCases: T[][], idx = 0) => {
+const recursiveAssertEquals = <T>(inputs: T[], testCases: T[][], idx = 0) => {
   try {
     return assertEquals(inputs, testCases[idx]);
   } catch {
-    return recursiveAssert(inputs, testCases, idx + 1);
+    return recursiveAssertEquals(inputs, testCases, idx + 1);
   }
 };
 
