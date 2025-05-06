@@ -21,8 +21,8 @@ const getSecondLowestLengthElementIdx = <T>(
   const secondLowestLength = Math.min(...lengthArrayWithoutLowestLength);
 
   return array.findIndex(
-    (array, idx) =>
-      idx !== lowestLengthElementIdx && getLength(array) === secondLowestLength,
+    (el, idx) =>
+      idx !== lowestLengthElementIdx && getLength(el) === secondLowestLength,
   );
 };
 
