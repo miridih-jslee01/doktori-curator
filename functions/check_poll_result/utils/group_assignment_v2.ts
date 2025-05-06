@@ -3,6 +3,8 @@ export type BookGroup = {
   members: string[];
 };
 
+const pick = (array: string[], index: number) => array.splice(index, 1)[0];
+
 export const reassignmentGroups = (bookGroups: BookGroup[], min?: number) => {
   if (!min) {
     return bookGroups;
@@ -24,15 +26,14 @@ export const reassignmentGroups = (bookGroups: BookGroup[], min?: number) => {
   );
 
   if (totalSparePerson >= 0) {
-    const sparePerson = nextBookGroups[maxBookGroupIdx].members.splice(
+    const sparePerson = pick(
+      nextBookGroups[maxBookGroupIdx].members,
       Math.floor(
         Math.random() * nextBookGroups[maxBookGroupIdx].members.length,
       ),
-      1,
-    )[0];
+    );
     nextBookGroups[minBookGroupIdx].members.push(sparePerson);
   }
-  console.log(nextBookGroups);
 
   return nextBookGroups.filter((bookGroup) => bookGroup.members.length >= min);
 };
