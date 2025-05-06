@@ -222,6 +222,25 @@ Deno.test(
         min: 4,
         expected: [4, 4],
       },
+      {
+        name: "미충족(인원1), 충족(인원4), 미충족(인원2)",
+        inputBookGroups: [
+          {
+            bookTitle: "마음",
+            members: ["user1"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: ["user2", "user3", "user4", "user5"],
+          },
+          {
+            bookTitle: "도둑맞은 집중력",
+            members: ["user6", "user7"],
+          },
+        ],
+        min: 4,
+        expected: [7],
+      },
     ];
 
     for (const tc of testCases) {
