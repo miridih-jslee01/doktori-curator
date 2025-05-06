@@ -59,7 +59,9 @@ export const reassignmentGroups = (
     }
 
     const secondMinBookGroupIdx = nextBookGroups.findIndex(
-      (group) => group.members.length === secondMinBookGroupLength,
+      (group, idx) =>
+        idx !== minBookGroupIdx &&
+        group.members.length === secondMinBookGroupLength,
     );
 
     const sparePerson = pick(
