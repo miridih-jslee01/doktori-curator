@@ -7,6 +7,26 @@ const pick = <T>(array: T[], index: number) => array.splice(index, 1)[0];
 const getRandomIdx = (array: unknown[]): number =>
   Math.floor(Math.random() * array.length);
 const pickRandomElement = <T>(array: T[]) => pick(array, getRandomIdx(array));
+const getSecondMinBookGroupIdx = <T extends { members: string[] }>(
+  array: T[],
+  minBookGroupIdx: number,
+) => {
+  const arrayWithoutMinElement = [...array];
+  pick(arrayWithoutMinElement, minBookGroupIdx);
+  const membersLengthWithoutLowestMembersLength = arrayWithoutMinElement.map(
+    (el) => el.members.length,
+  );
+
+  const secondMinMembersLength = Math.min(
+    ...membersLengthWithoutLowestMembersLength,
+  );
+
+  return array.findIndex(
+    (array, idx) =>
+      idx !== minBookGroupIdx &&
+      array.members.length === secondMinMembersLength,
+  );
+};
 
 export const reassignmentGroups = (
   bookGroups: BookGroup[],
@@ -44,22 +64,10 @@ export const reassignmentGroups = (
     );
     nextBookGroups[minBookGroupIdx].members.push(sparePerson);
   } else {
-    const bookGroupsWithoutMinBookGroup = [...nextBookGroups];
-    pick(bookGroupsWithoutMinBookGroup, minBookGroupIdx);
-
-    const bookGroupMembersLengthsWithoutMinBookGroup =
-      bookGroupsWithoutMinBookGroup.map((group) => group.members.length);
-
-    const secondMinBookGroupLength = Math.min(
-      ...bookGroupMembersLengthsWithoutMinBookGroup,
+    const secondMinBookGroupIdx = getSecondMinBookGroupIdx(
+      nextBookGroups,
+      minBookGroupIdx,
     );
-
-    const secondMinBookGroupIdx = nextBookGroups.findIndex(
-      (group, idx) =>
-        idx !== minBookGroupIdx &&
-        group.members.length === secondMinBookGroupLength,
-    );
-
     const sparePerson = pickRandomElement(
       nextBookGroups[minBookGroupIdx].members,
     );
