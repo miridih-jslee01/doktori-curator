@@ -28,12 +28,13 @@ const getSecondLowestLengthElementIdx = <T>(
 
 export const reassignmentGroups = (
   bookGroups: BookGroup[],
-  min?: number,
+  min = 1,
   max?: number,
 ): BookGroup[] => {
-  if (!min || bookGroups.length === 1) {
+  if (bookGroups.length === 1) {
     return bookGroups;
   }
+
   const bookGroupMembersLengths = bookGroups.map(
     (group) => group.members.length,
   );

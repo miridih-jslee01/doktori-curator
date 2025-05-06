@@ -307,7 +307,7 @@ Deno.test(
     const testCases: {
       name: string;
       inputBookGroups: BookGroup[];
-      min: number;
+      min?: number;
       max: number;
       expected: number[];
     }[] = [
@@ -335,6 +335,65 @@ Deno.test(
         max: 6,
         expected: [5, 6],
       },
+      {
+        name: "충족(인원5), 충족(인원8), 충족(인원6)",
+        inputBookGroups: [
+          {
+            bookTitle: "마음",
+            members: ["user1", "user2", "user3", "user4", "user5"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: [
+              "user6",
+              "user7",
+              "user8",
+              "user9",
+              "user10",
+              "user11",
+              "user12",
+              "user13",
+            ],
+          },
+          {
+            bookTitle: "도둑맞은 집중력",
+            members: [
+              "user14",
+              "user15",
+              "user16",
+              "user17",
+              "user18",
+              "user19",
+            ],
+          },
+        ],
+        min: 4,
+        max: 6,
+        expected: [6, 7, 6],
+      },{
+        name: "인원5, 인원8",
+        inputBookGroups: [
+          {
+            bookTitle: "마음",
+            members: ["user1", "user2", "user3", "user4", "user5"],
+          },
+          {
+            bookTitle: "에디토리얼 씽킹",
+            members: [
+              "user6",
+              "user7",
+              "user8",
+              "user9",
+              "user10",
+              "user11",
+              "user12",
+              "user13",
+            ],
+          },
+        ],
+        max: 6,
+        expected: [6, 7],
+      }
     ];
 
     for (const tc of testCases) {
