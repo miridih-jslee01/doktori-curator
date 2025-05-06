@@ -40,15 +40,15 @@ Deno.test(
         expected: [7],
       },
       {
-          name: '미충족 그룹3, 충족 그룹1',
+        name: "미충족 그룹3, 충족 그룹1",
         inputBookGroups: [
           { bookTitle: "asfsfa", members: [] },
           { bookTitle: "xzczxc", members: ["U03M9L667KR"] },
           { bookTitle: "sadasda", members: [] },
           { bookTitle: "zxcxzczxc", members: [] },
         ],
-          min: 4,
-          expected: [1]
+        min: 4,
+        expected: [1],
       },
     ];
     for (const tc of testCases) {
@@ -456,3 +456,42 @@ Deno.test(
     }
   }
 );
+
+Deno.test("한 유저가 여러 권에 투표했다면, 한권만 선택된다.", () => {
+  const testCases: {
+    name?: string;
+    inputBookGroups: BookGroup[];
+    min?: number;
+    max?: number;
+    expected: number[];
+  }[] = [
+    {
+      inputBookGroups: [
+        {
+          bookTitle: "마음",
+          members: ["user1"],
+        },
+        {
+          bookTitle: "에디토리얼 씽킹",
+          members: ["user1"],
+        },
+      ],
+      min: 4,
+      max: 6,
+      expected: [1],
+    },
+  ];
+
+  for (const tc of testCases) {
+    console.log(tc.name);
+    const assignmentCompletedGroups = reassignmentGroups(
+      tc.inputBookGroups,
+      tc.min,
+      tc.max
+    );
+    assertEquals(
+      assignmentCompletedGroups.map((group) => group.members.length),
+      tc.expected
+    );
+  }
+});
