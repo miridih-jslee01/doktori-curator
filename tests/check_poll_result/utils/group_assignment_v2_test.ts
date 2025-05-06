@@ -202,7 +202,7 @@ Deno.test(
           },
         ],
         min: 4,
-        expected: [5, 4],
+        expected: [4, 4],
       }
     ];
 

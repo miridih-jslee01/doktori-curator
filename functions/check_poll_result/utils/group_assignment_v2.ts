@@ -43,9 +43,31 @@ export const reassignmentGroups = (
       getRandomIdx(nextBookGroups[maxBookGroupIdx].members),
     );
     nextBookGroups[minBookGroupIdx].members.push(sparePerson);
+  } else {
+    const bookGroupsWithoutMinBookGroup = [...nextBookGroups];
+    pick(bookGroupsWithoutMinBookGroup, minBookGroupIdx);
 
-    return reassignmentGroups(nextBookGroups, min);
+    const bookGroupMembersLengthsWithoutMinBookGroup =
+      bookGroupsWithoutMinBookGroup.map((group) => group.members.length);
+
+    const secondMinBookGroupLength = Math.min(
+      ...bookGroupMembersLengthsWithoutMinBookGroup,
+    );
+
+    if (secondMinBookGroupLength >= min) {
+      return nextBookGroups.filter((group) => group.members.length >= min);
+    }
+
+    const secondMinBookGroupIdx = nextBookGroups.findIndex(
+      (group) => group.members.length === secondMinBookGroupLength,
+    );
+
+    const sparePerson = pick(
+      nextBookGroups[minBookGroupIdx].members,
+      getRandomIdx(nextBookGroups[minBookGroupIdx].members),
+    );
+    nextBookGroups[secondMinBookGroupIdx].members.push(sparePerson);
   }
 
-  return nextBookGroups.filter((bookGroup) => bookGroup.members.length >= min);
+  return reassignmentGroups(nextBookGroups, min);
 };
