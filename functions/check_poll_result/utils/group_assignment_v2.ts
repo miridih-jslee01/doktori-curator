@@ -70,15 +70,15 @@ export const reassignmentGroups = (
   if (bookGroups.length === 1) {
     return bookGroups;
   }
+  const nextBookGroups = [...bookGroups];
 
-  const bookGroupMembersLengths = bookGroups.map(
+  const bookGroupMembersLengths = nextBookGroups.map(
     (group) => group.members.length,
   );
-  const sparePersonArray = bookGroups.map(
+  const sparePersonArray = nextBookGroups.map(
     (group) => group.members.length - min,
   );
   const totalSparePerson = sparePersonArray.reduce((a, b) => a + b, 0);
-  const nextBookGroups = [...bookGroups];
 
   const minBookGroupLength = Math.min(...bookGroupMembersLengths);
   const maxBookGroupLength = Math.max(...bookGroupMembersLengths);
@@ -88,11 +88,11 @@ export const reassignmentGroups = (
   }
 
   const minBookGroupIdx = findIndex(
-    bookGroups,
+    nextBookGroups,
     (group) => group.members.length === minBookGroupLength,
   );
   const maxBookGroupIdx = findIndex(
-    bookGroups,
+    nextBookGroups,
     (group) => group.members.length === maxBookGroupLength,
   );
 
