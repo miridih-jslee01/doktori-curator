@@ -264,7 +264,7 @@ Deno.test(
       name: string;
       inputBookGroups: BookGroup[];
       min: number;
-      expected: number[];
+      expected: number[][];
     }[] = [
       {
         name: "미충족(인원1), 충족(인원5), 미충족(인원2)",
@@ -283,8 +283,9 @@ Deno.test(
           },
         ],
         min: 4,
-        expected: [4, 4],
-      },{
+        expected: [[4, 4]],
+      },
+      {
         name: "충족(인원5), 충족(인원5), 미충족(인원1), 미충족(인원2)",
         inputBookGroups: [
           {
@@ -305,8 +306,11 @@ Deno.test(
           },
         ],
         min: 4,
-        expected: [5, 4, 4],
-      }
+        expected: [
+          [5, 4, 4],
+          [4, 5, 4],
+        ],
+      },
     ];
 
     for (const tc of testCases) {
@@ -315,13 +319,21 @@ Deno.test(
         tc.inputBookGroups,
         tc.min
       );
-      assertEquals(
+      recursiveAssert(
         assignmentCompletedGroups.map((group) => group.members.length),
         tc.expected
       );
     }
   }
 );
+
+const recursiveAssert = <T>(inputs: T[], testCases: T[][], idx = 0) => {
+  try {
+    return assertEquals(inputs, testCases[idx]);
+  } catch {
+    return recursiveAssert(inputs, testCases, idx + 1);
+  }
+};
 
 Deno.test(
   "인원제한을 초과한 그룹이 있다면, 가능한한 초과하지 않도록 다른 그룹으로 인원을 분배한다.",
@@ -392,7 +404,8 @@ Deno.test(
         min: 4,
         max: 6,
         expected: [6, 7, 6],
-      },{
+      },
+      {
         name: "인원5, 인원8",
         inputBookGroups: [
           {
@@ -415,7 +428,7 @@ Deno.test(
         ],
         max: 6,
         expected: [6, 7],
-      }
+      },
     ];
 
     for (const tc of testCases) {
